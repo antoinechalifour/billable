@@ -33,17 +33,23 @@ export default function CalendarScreen() {
   const [currentMonthOffset, setCurrentMonthOffset] = useState(0);
   const [scrollY, setScrollY] = useState(0);
 
-  const currentDate = new Date();
+  const currentDate = useMemo(() => new Date(), []);
   const paramMonth = params.month ? parseInt(params.month as string) : currentDate.getMonth();
   const paramYear = params.year ? parseInt(params.year as string) : currentDate.getFullYear();
 
-  const getMonthData = (monthOffset: number) => {
-    const baseDate = new Date(paramYear, paramMonth + monthOffset, 1);
+  // More reasonable content height for infinite scroll
+  const totalContentHeight = 1000 * MONTH_HEIGHT; // 1000 months = ~83 years
+  const offsetY = 500 * MONTH_HEIGHT; // Start in the middle (500 months back)
+
+  const getMonthData = useCallback((monthOffset: number) => {
+    // More conservative calculation - offset from the center point
+    const actualOffset = monthOffset - 500; // Subtract the center offset
+    const baseDate = new Date(paramYear, paramMonth + actualOffset, 1);
     return {
       month: baseDate.getMonth(),
       year: baseDate.getFullYear(),
     };
-  };
+  }, [paramMonth, paramYear]);
 
   const getCalendarDays = (month: number, year: number) => {
     const firstDay = new Date(year, month, 1);
@@ -121,23 +127,46 @@ export default function CalendarScreen() {
     const newScrollY = event.nativeEvent.contentOffset.y;
     setScrollY(newScrollY);
     
-    const newMonthOffset = Math.floor(newScrollY / MONTH_HEIGHT);
-    if (newMonthOffset !== currentMonthOffset) {
-      setCurrentMonthOffset(newMonthOffset);
-      const { month, year } = getMonthData(newMonthOffset);
+    // Calculate which month index we're viewing (0-999)
+    const monthIndex = Math.floor(newScrollY / MONTH_HEIGHT);
+    
+    if (monthIndex !== currentMonthOffset) {
+      setCurrentMonthOffset(monthIndex);
+      const { month, year } = getMonthData(monthIndex);
       router.setParams({ month: month.toString(), year: year.toString() });
     }
   }, [currentMonthOffset, getMonthData, router]);
 
-  // Render a large range of months for infinite scroll
-  const months = useMemo(() => {
-    const monthsToRender = 120; // 10 years worth
-    const startOffset = -60; // Start 5 years in the past
-    return Array.from({ length: monthsToRender }, (_, i) => {
-      const monthOffset = startOffset + i;
-      return renderMonth(monthOffset);
-    });
-  }, [renderMonth]);
+  // Calculate which months should be visible based on scroll position
+  const visibleMonths = useMemo(() => {
+    const currentIndex = Math.floor(scrollY / MONTH_HEIGHT);
+    const months = [];
+    
+    // Render current month + 1 before + 1 after for smooth scrolling
+    for (let i = -1; i <= 1; i++) {
+      const monthIndex = Math.max(0, Math.min(999, currentIndex + i)); // Keep within bounds
+      months.push({
+        index: monthIndex,
+        y: monthIndex * MONTH_HEIGHT,
+        component: renderMonth(monthIndex)
+      });
+    }
+    
+    return months;
+  }, [scrollY, renderMonth]);
+
+  // Calculate initial scroll position to show current month  
+  const initialScrollPosition = useMemo(() => {
+    // Start at the center (500th month)
+    return 500 * MONTH_HEIGHT;
+  }, []);
+
+  useEffect(() => {
+    if (scrollViewRef.current) {
+      scrollViewRef.current.scrollTo({ y: initialScrollPosition, animated: false });
+      setScrollY(initialScrollPosition);
+    }
+  }, [initialScrollPosition]);
 
   return (
     <View style={styles.container}>
@@ -155,9 +184,21 @@ export default function CalendarScreen() {
         showsVerticalScrollIndicator={false}
         onScroll={handleScroll}
         scrollEventThrottle={16}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { height: totalContentHeight }]}
       >
-        {months}
+        {visibleMonths.map(({ index, y, component }) => (
+          <View
+            key={index}
+            style={{
+              position: 'absolute',
+              top: y,
+              left: 0,
+              right: 0,
+            }}
+          >
+            {component}
+          </View>
+        ))}
       </ScrollView>
     </View>
   );
