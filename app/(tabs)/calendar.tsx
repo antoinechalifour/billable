@@ -164,10 +164,9 @@ const styles = StyleSheet.create({
     height: CELL_HEIGHT,
     justifyContent: "flex-start",
     alignItems: "flex-start",
-    borderRadius: 8,
     padding: 8,
-    borderWidth: 0.5,
-    borderColor: "#E5E5EA",
+    borderTopWidth: 0.5,
+    borderTopColor: "#E5E5EA",
   },
   dayText: {
     fontSize: 16,
@@ -175,8 +174,8 @@ const styles = StyleSheet.create({
   },
   todayCell: {
     backgroundColor: "#007AFF10",
-    borderColor: "#007AFF",
-    borderWidth: 1,
+    borderTopColor: "#007AFF",
+    borderTopWidth: 1,
   },
   todayText: {
     color: "#007AFF",
