@@ -1,47 +1,33 @@
-import { Text, View } from "react-native";
-import { OPSqliteOpenFactory } from '@powersync/op-sqlite';
-import {column, PowerSyncDatabase, Schema, Table} from '@powersync/react-native';
+import { Redirect } from "expo-router";
+import {column, Schema, Table} from '@powersync/react-native';
 
-const lists = new Table({
-    created_at: column.text,
+const clients = new Table({
+    id: column.text,
     name: column.text,
-    owner_id: column.text
+    color: column.text,
+    daily_rate: column.real,
+    created_at: column.text,
+    updated_at: column.text
 });
 
-const todos = new Table(
+const time_entries = new Table(
     {
-        list_id: column.text,
+        id: column.text,
+        client_id: column.text,
+        date: column.text,
+        duration_type: column.text, // 'full_day' or 'half_day'
+        notes: column.text,
         created_at: column.text,
-        completed_at: column.text,
-        description: column.text,
-        created_by: column.text,
-        completed_by: column.text,
-        completed: column.integer
+        updated_at: column.text
     },
-    { indexes: { list: ['list_id'] } }
+    { indexes: { client: ['client_id'], date: ['date'] } }
 );
 
 export const AppSchema = new Schema({
-    todos,
-    lists
+    clients,
+    time_entries
 });
-
-const factory = new OPSqliteOpenFactory({
-    dbFilename: 'sqlite.db'
-});
-
-const powersync = new PowerSyncDatabase({ database: factory, schema: AppSchema });
 
 export default function Index() {
-  return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <Text>Edit app/index.tsx to edit this screen.</Text>
-    </View>
-  );
+  return <Redirect href="/(tabs)/calendar" />;
 }
