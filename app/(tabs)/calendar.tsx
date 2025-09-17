@@ -9,8 +9,12 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
-const { width: screenWidth } = Dimensions.get("window");
-const CELL_SIZE = (screenWidth - 32) / 7;
+const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
+const CELL_WIDTH = (screenWidth - 32) / 7;
+const HEADER_HEIGHT = 120;
+const DAYS_HEADER_HEIGHT = 40;
+const AVAILABLE_HEIGHT = screenHeight - HEADER_HEIGHT - DAYS_HEADER_HEIGHT - 100;
+const CELL_HEIGHT = AVAILABLE_HEIGHT / 6;
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTHS = [
@@ -142,7 +146,7 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   dayHeaderCell: {
-    width: CELL_SIZE,
+    width: CELL_WIDTH,
     alignItems: "center",
   },
   dayHeaderText: {
@@ -156,21 +160,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   dayCell: {
-    width: CELL_SIZE,
-    height: CELL_SIZE,
-    justifyContent: "center",
-    alignItems: "center",
+    width: CELL_WIDTH,
+    height: CELL_HEIGHT,
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
     borderRadius: 8,
+    padding: 8,
+    borderWidth: 0.5,
+    borderColor: "#E5E5EA",
   },
   dayText: {
     fontSize: 16,
     color: "#000",
   },
   todayCell: {
-    backgroundColor: "#007AFF",
+    backgroundColor: "#007AFF10",
+    borderColor: "#007AFF",
+    borderWidth: 1,
   },
   todayText: {
-    color: "#FFF",
+    color: "#007AFF",
     fontWeight: "600",
   },
 });
