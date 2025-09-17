@@ -1,7 +1,14 @@
-import { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Alert, StyleSheet } from 'react-native';
-import FeatherIcons from '@expo/vector-icons/Feather';
-import { powersync } from '../_layout';
+import { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  Alert,
+  StyleSheet,
+} from "react-native";
+import FeatherIcons from "@expo/vector-icons/Feather";
+import { powersync } from "../_layout";
 
 interface Client {
   id: string;
@@ -21,10 +28,12 @@ export default function ClientsScreen() {
 
   const loadClients = async () => {
     try {
-      const result = await powersync.getAll('SELECT * FROM clients ORDER BY name');
+      const result = await powersync.getAll(
+        "SELECT * FROM clients ORDER BY name",
+      );
       setClients(result);
     } catch (error) {
-      console.error('Error loading clients:', error);
+      console.error("Error loading clients:", error);
     }
   };
 
@@ -33,23 +42,23 @@ export default function ClientsScreen() {
       const id = `client_${Date.now()}`;
       const now = new Date().toISOString();
       await powersync.execute(
-        'INSERT INTO clients (id, name, color, daily_rate, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
-        [id, 'Test Client', '#3B82F6', 500, now, now]
+        "INSERT INTO clients (id, name, color, daily_rate, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
+        [id, "Test Client", "#3B82F6", 500, now, now],
       );
       loadClients();
     } catch (error) {
-      console.error('Error adding client:', error);
-      Alert.alert('Error', 'Failed to add client');
+      console.error("Error adding client:", error);
+      Alert.alert("Error", "Failed to add client");
     }
   };
 
   const deleteClient = async (clientId: string) => {
     try {
-      await powersync.execute('DELETE FROM clients WHERE id = ?', [clientId]);
+      await powersync.execute("DELETE FROM clients WHERE id = ?", [clientId]);
       loadClients();
     } catch (error) {
-      console.error('Error deleting client:', error);
-      Alert.alert('Error', 'Failed to delete client');
+      console.error("Error deleting client:", error);
+      Alert.alert("Error", "Failed to delete client");
     }
   };
 
@@ -77,7 +86,7 @@ export default function ClientsScreen() {
           <FeatherIcons name="plus" size={24} color="white" />
         </TouchableOpacity>
       </View>
-      
+
       <FlatList
         data={clients}
         renderItem={renderClient}
@@ -86,7 +95,9 @@ export default function ClientsScreen() {
         ListEmptyComponent={
           <View style={styles.emptyState}>
             <Text style={styles.emptyText}>No clients yet</Text>
-            <Text style={styles.emptySubtext}>Tap + to add your first client</Text>
+            <Text style={styles.emptySubtext}>
+              Tap + to add your first client
+            </Text>
           </View>
         }
       />
@@ -97,41 +108,41 @@ export default function ClientsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     padding: 16,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e5e5',
+    borderBottomColor: "#e5e5e5",
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   addButton: {
-    backgroundColor: '#3B82F6',
+    backgroundColor: "#3B82F6",
     borderRadius: 20,
     width: 40,
     height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   list: {
     flex: 1,
   },
   clientItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'white',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "white",
     padding: 16,
     marginVertical: 4,
     marginHorizontal: 16,
     borderRadius: 8,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
@@ -148,38 +159,38 @@ const styles = StyleSheet.create({
   },
   clientName: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 4,
   },
   dailyRate: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
   },
   deleteButton: {
-    backgroundColor: '#EF4444',
+    backgroundColor: "#EF4444",
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 4,
   },
   deleteText: {
-    color: 'white',
+    color: "white",
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   emptyState: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginTop: 100,
   },
   emptyText: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#666',
+    fontWeight: "600",
+    color: "#666",
     marginBottom: 8,
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#999',
+    color: "#999",
   },
 });
