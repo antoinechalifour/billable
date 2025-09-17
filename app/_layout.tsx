@@ -1,17 +1,18 @@
 import { Stack } from "expo-router";
-import { OPSqliteOpenFactory } from "@powersync/op-sqlite";
-import { PowerSyncDatabase } from "@powersync/react-native";
-import { AppSchema } from "./index";
+import { clients, db, powersync } from "@/src/powersync/powersync";
+import { use } from "react";
+import { PowerSyncContext } from "@powersync/react";
 
-const factory = new OPSqliteOpenFactory({
-  dbFilename: "sqlite.db",
-});
+window.___test = async () => {
+  await db.delete(clients);
+};
 
-export const powersync = new PowerSyncDatabase({
-  database: factory,
-  schema: AppSchema,
-});
-
+const promise = powersync.init();
 export default function RootLayout() {
-  return <Stack screenOptions={{ headerShown: false }} />;
+  use(promise);
+  return (
+    <PowerSyncContext.Provider value={powersync}>
+      <Stack screenOptions={{ headerShown: false }} />
+    </PowerSyncContext.Provider>
+  );
 }
