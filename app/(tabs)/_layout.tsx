@@ -22,15 +22,6 @@ export default function TabLayout() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="reports"
-        options={{
-          title: "Reports",
-          tabBarIcon: ({ color, size }) => (
-            <FeatherIcons name="bar-chart-2" color={color} size={size} />
-          ),
-        }}
-      />
     </Tabs>
   );
 }
