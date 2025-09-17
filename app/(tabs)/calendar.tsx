@@ -33,18 +33,16 @@ export default function CalendarScreen() {
   const [currentMonthOffset, setCurrentMonthOffset] = useState(0);
   const [scrollY, setScrollY] = useState(0);
 
+  // Large content area that allows negative scroll
+  const contentHeight = 2000 * MONTH_HEIGHT;
+  const contentPadding = 1000 * MONTH_HEIGHT; // Padding to allow negative scroll
+
   const currentDate = useMemo(() => new Date(), []);
   const paramMonth = params.month ? parseInt(params.month as string) : currentDate.getMonth();
   const paramYear = params.year ? parseInt(params.year as string) : currentDate.getFullYear();
 
-  // More reasonable content height for infinite scroll
-  const totalContentHeight = 1000 * MONTH_HEIGHT; // 1000 months = ~83 years
-  const offsetY = 500 * MONTH_HEIGHT; // Start in the middle (500 months back)
-
   const getMonthData = useCallback((monthOffset: number) => {
-    // More conservative calculation - offset from the center point
-    const actualOffset = monthOffset - 500; // Subtract the center offset
-    const baseDate = new Date(paramYear, paramMonth + actualOffset, 1);
+    const baseDate = new Date(paramYear, paramMonth + monthOffset, 1);
     return {
       month: baseDate.getMonth(),
       year: baseDate.getFullYear(),
@@ -127,46 +125,41 @@ export default function CalendarScreen() {
     const newScrollY = event.nativeEvent.contentOffset.y;
     setScrollY(newScrollY);
     
-    // Calculate which month index we're viewing (0-999)
-    const monthIndex = Math.floor(newScrollY / MONTH_HEIGHT);
+    // Calculate month offset from scroll position (relative to contentPadding)
+    const monthOffset = Math.round((newScrollY - contentPadding) / MONTH_HEIGHT);
     
-    if (monthIndex !== currentMonthOffset) {
-      setCurrentMonthOffset(monthIndex);
-      const { month, year } = getMonthData(monthIndex);
+    if (monthOffset !== currentMonthOffset) {
+      setCurrentMonthOffset(monthOffset);
+      const { month, year } = getMonthData(monthOffset);
       router.setParams({ month: month.toString(), year: year.toString() });
     }
-  }, [currentMonthOffset, getMonthData, router]);
+  }, [currentMonthOffset, getMonthData, router, contentPadding]);
 
   // Calculate which months should be visible based on scroll position
   const visibleMonths = useMemo(() => {
-    const currentIndex = Math.floor(scrollY / MONTH_HEIGHT);
+    const currentOffset = Math.round((scrollY - contentPadding) / MONTH_HEIGHT);
     const months = [];
     
     // Render current month + 1 before + 1 after for smooth scrolling
     for (let i = -1; i <= 1; i++) {
-      const monthIndex = Math.max(0, Math.min(999, currentIndex + i)); // Keep within bounds
+      const monthOffset = currentOffset + i;
       months.push({
-        index: monthIndex,
-        y: monthIndex * MONTH_HEIGHT,
-        component: renderMonth(monthIndex)
+        offset: monthOffset,
+        y: monthOffset * MONTH_HEIGHT,
+        component: renderMonth(monthOffset)
       });
     }
     
     return months;
-  }, [scrollY, renderMonth]);
-
-  // Calculate initial scroll position to show current month  
-  const initialScrollPosition = useMemo(() => {
-    // Start at the center (500th month)
-    return 500 * MONTH_HEIGHT;
-  }, []);
+  }, [scrollY, contentPadding, renderMonth]);
 
   useEffect(() => {
     if (scrollViewRef.current) {
-      scrollViewRef.current.scrollTo({ y: initialScrollPosition, animated: false });
-      setScrollY(initialScrollPosition);
+      // Start at position 0 (current month)
+      scrollViewRef.current.scrollTo({ y: contentPadding, animated: false });
+      setScrollY(contentPadding);
     }
-  }, [initialScrollPosition]);
+  }, [contentPadding]);
 
   return (
     <View style={styles.container}>
@@ -184,14 +177,14 @@ export default function CalendarScreen() {
         showsVerticalScrollIndicator={false}
         onScroll={handleScroll}
         scrollEventThrottle={16}
-        contentContainerStyle={[styles.scrollContent, { height: totalContentHeight }]}
+        contentContainerStyle={[styles.scrollContent, { height: contentHeight }]}
       >
-        {visibleMonths.map(({ index, y, component }) => (
+        {visibleMonths.map(({ offset, y, component }) => (
           <View
-            key={index}
+            key={offset}
             style={{
               position: 'absolute',
-              top: y,
+              top: y + contentPadding,
               left: 0,
               right: 0,
             }}
