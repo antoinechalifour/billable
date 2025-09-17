@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useCallback } from "react";
+import React, { useMemo, useRef, useCallback, useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,6 +6,8 @@ import {
   StyleSheet,
   Dimensions,
   ScrollView,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
@@ -16,7 +18,7 @@ const DAYS_HEADER_HEIGHT = 40;
 const AVAILABLE_HEIGHT = screenHeight - HEADER_HEIGHT - DAYS_HEADER_HEIGHT - 100;
 const CELL_HEIGHT = AVAILABLE_HEIGHT / 6;
 
-const MONTHS_TO_RENDER = 24;
+const MONTH_HEIGHT = CELL_HEIGHT * 6 + 80; // 6 rows + header + padding
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTHS = [
@@ -28,12 +30,15 @@ export default function CalendarScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const scrollViewRef = useRef<ScrollView>(null);
+  const [currentMonthOffset, setCurrentMonthOffset] = useState(0);
+  const [scrollY, setScrollY] = useState(0);
+
   const currentDate = new Date();
   const paramMonth = params.month ? parseInt(params.month as string) : currentDate.getMonth();
   const paramYear = params.year ? parseInt(params.year as string) : currentDate.getFullYear();
 
-  const getMonthData = (monthIndex: number) => {
-    const baseDate = new Date(paramYear, paramMonth - 12 + monthIndex, 1);
+  const getMonthData = (monthOffset: number) => {
+    const baseDate = new Date(paramYear, paramMonth + monthOffset, 1);
     return {
       month: baseDate.getMonth(),
       year: baseDate.getFullYear(),
@@ -87,12 +92,12 @@ export default function CalendarScreen() {
     );
   };
 
-  const renderMonth = useCallback((monthIndex: number) => {
-    const { month, year } = getMonthData(monthIndex);
+  const renderMonth = useCallback((monthOffset: number) => {
+    const { month, year } = getMonthData(monthOffset);
     const rows = getCalendarRows(month, year);
 
     return (
-      <View key={monthIndex} style={styles.monthContainer}>
+      <View key={monthOffset} style={[styles.monthContainer, { height: MONTH_HEIGHT }]}>
         <View style={styles.monthHeader}>
           <Text style={styles.monthHeaderText}>
             {MONTHS[month]} {year}
@@ -110,10 +115,28 @@ export default function CalendarScreen() {
         </View>
       </View>
     );
-  }, [paramMonth, paramYear]);
+  }, [getMonthData, getCalendarRows, renderCalendarDay]);
 
+  const handleScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const newScrollY = event.nativeEvent.contentOffset.y;
+    setScrollY(newScrollY);
+    
+    const newMonthOffset = Math.floor(newScrollY / MONTH_HEIGHT);
+    if (newMonthOffset !== currentMonthOffset) {
+      setCurrentMonthOffset(newMonthOffset);
+      const { month, year } = getMonthData(newMonthOffset);
+      router.setParams({ month: month.toString(), year: year.toString() });
+    }
+  }, [currentMonthOffset, getMonthData, router]);
+
+  // Render a large range of months for infinite scroll
   const months = useMemo(() => {
-    return Array.from({ length: MONTHS_TO_RENDER }, (_, i) => renderMonth(i));
+    const monthsToRender = 120; // 10 years worth
+    const startOffset = -60; // Start 5 years in the past
+    return Array.from({ length: monthsToRender }, (_, i) => {
+      const monthOffset = startOffset + i;
+      return renderMonth(monthOffset);
+    });
   }, [renderMonth]);
 
   return (
@@ -130,6 +153,8 @@ export default function CalendarScreen() {
         ref={scrollViewRef}
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
         contentContainerStyle={styles.scrollContent}
       >
         {months}
