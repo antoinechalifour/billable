@@ -1,4 +1,10 @@
-import React, { useMemo, useRef, useCallback, useState, useEffect } from "react";
+import React, {
+  useMemo,
+  useRef,
+  useCallback,
+  useState,
+  useEffect,
+} from "react";
 import {
   View,
   Text,
@@ -15,72 +21,92 @@ const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 const CELL_WIDTH = (screenWidth - 32) / 7;
 const HEADER_HEIGHT = 120;
 const DAYS_HEADER_HEIGHT = 40;
-const AVAILABLE_HEIGHT = screenHeight - HEADER_HEIGHT - DAYS_HEADER_HEIGHT - 100;
+const AVAILABLE_HEIGHT =
+  screenHeight - HEADER_HEIGHT - DAYS_HEADER_HEIGHT - 100;
 const CELL_HEIGHT = AVAILABLE_HEIGHT / 6;
 
 const MONTH_HEIGHT = CELL_HEIGHT * 6 + 80; // 6 rows + header + padding
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December"
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 
-export default function CalendarScreen() {
-  const router = useRouter();
-  const params = useLocalSearchParams();
-  const scrollViewRef = useRef<ScrollView>(null);
-  const [currentMonthOffset, setCurrentMonthOffset] = useState(0);
-  const [scrollY, setScrollY] = useState(0);
+const getCalendarDays = (month: number, year: number) => {
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const daysInMonth = lastDay.getDate();
+  const startingDayOfWeek = firstDay.getDay();
 
-  // Large content area that allows negative scroll
-  const contentHeight = 2000 * MONTH_HEIGHT;
-  const contentPadding = 1000 * MONTH_HEIGHT; // Padding to allow negative scroll
+  const days = [];
 
-  const currentDate = useMemo(() => new Date(), []);
-  const paramMonth = params.month ? parseInt(params.month as string) : currentDate.getMonth();
-  const paramYear = params.year ? parseInt(params.year as string) : currentDate.getFullYear();
+  for (let i = 0; i < startingDayOfWeek; i++) {
+    days.push(null);
+  }
 
-  const getMonthData = useCallback((monthOffset: number) => {
-    const baseDate = new Date(paramYear, paramMonth + monthOffset, 1);
-    return {
-      month: baseDate.getMonth(),
-      year: baseDate.getFullYear(),
-    };
-  }, [paramMonth, paramYear]);
+  for (let day = 1; day <= daysInMonth; day++) {
+    days.push(day);
+  }
 
-  const getCalendarDays = (month: number, year: number) => {
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const daysInMonth = lastDay.getDate();
-    const startingDayOfWeek = firstDay.getDay();
+  return days;
+};
 
-    const days = [];
-    
-    for (let i = 0; i < startingDayOfWeek; i++) {
-      days.push(null);
-    }
-    
-    for (let day = 1; day <= daysInMonth; day++) {
-      days.push(day);
-    }
-    
-    return days;
+const getCalendarRows = (month: number, year: number) => {
+  const days = getCalendarDays(month, year);
+  const rows = [];
+  for (let i = 0; i < days.length; i += 7) {
+    rows.push(days.slice(i, i + 7));
+  }
+  return rows;
+};
+
+const getMonthData = (
+  paramYear: number,
+  paramMonth: number,
+  monthOffset: number,
+) => {
+  const baseDate = new Date(paramYear, paramMonth + monthOffset, 1);
+  return {
+    month: baseDate.getMonth(),
+    year: baseDate.getFullYear(),
   };
+};
 
-  const getCalendarRows = (month: number, year: number) => {
-    const days = getCalendarDays(month, year);
-    const rows = [];
-    for (let i = 0; i < days.length; i += 7) {
-      rows.push(days.slice(i, i + 7));
-    }
-    return rows;
-  };
+const MonthCalendar = ({
+  currentDate,
+  paramYear,
+  paramMonth,
+  monthOffset,
+}: {
+  currentDate: Date;
+  paramYear: number;
+  paramMonth: number;
+  monthOffset: number;
+}) => {
+  const { month, year } = getMonthData(paramYear, paramMonth, monthOffset);
+  const rows = getCalendarRows(month, year);
 
-  const renderCalendarDay = (day: number | null, index: number, month: number, year: number) => {
-    const isToday = day && 
-      day === currentDate.getDate() && 
-      month === currentDate.getMonth() && 
+  const renderCalendarDay = (
+    day: number | null,
+    index: number,
+    month: number,
+    year: number,
+  ) => {
+    const isToday =
+      day &&
+      day === currentDate.getDate() &&
+      month === currentDate.getMonth() &&
       year === currentDate.getFullYear();
 
     return (
@@ -96,62 +122,94 @@ export default function CalendarScreen() {
     );
   };
 
-  const renderMonth = useCallback((monthOffset: number) => {
-    const { month, year } = getMonthData(monthOffset);
-    const rows = getCalendarRows(month, year);
-
-    return (
-      <View key={monthOffset} style={[styles.monthContainer, { height: MONTH_HEIGHT }]}>
-        <View style={styles.monthHeader}>
-          <Text style={styles.monthHeaderText}>
-            {MONTHS[month]} {year}
-          </Text>
-        </View>
-        
-        <View style={styles.monthCalendar}>
-          {rows.map((row, rowIndex) => (
-            <View key={rowIndex} style={styles.calendarRow}>
-              {row.map((day, dayIndex) => 
-                renderCalendarDay(day, rowIndex * 7 + dayIndex, month, year)
-              )}
-            </View>
-          ))}
-        </View>
+  return (
+    <View style={[styles.monthContainer, { height: MONTH_HEIGHT }]}>
+      <View style={styles.monthHeader}>
+        <Text style={styles.monthHeaderText}>
+          {MONTHS[month]} {year}
+        </Text>
       </View>
-    );
-  }, [getMonthData, getCalendarRows, renderCalendarDay]);
 
-  const handleScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const newScrollY = event.nativeEvent.contentOffset.y;
-    setScrollY(newScrollY);
-    
-    // Calculate month offset from scroll position (relative to contentPadding)
-    const monthOffset = Math.round((newScrollY - contentPadding) / MONTH_HEIGHT);
-    
-    if (monthOffset !== currentMonthOffset) {
-      setCurrentMonthOffset(monthOffset);
-      const { month, year } = getMonthData(monthOffset);
-      router.setParams({ month: month.toString(), year: year.toString() });
-    }
-  }, [currentMonthOffset, getMonthData, router, contentPadding]);
+      <View style={styles.monthCalendar}>
+        {rows.map((row, rowIndex) => (
+          <View key={rowIndex} style={styles.calendarRow}>
+            {row.map((day, dayIndex) =>
+              renderCalendarDay(day, rowIndex * 7 + dayIndex, month, year),
+            )}
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+};
+
+export default function CalendarScreen() {
+  const router = useRouter();
+  const params = useLocalSearchParams();
+  const scrollViewRef = useRef<ScrollView>(null);
+  const [currentMonthOffset, setCurrentMonthOffset] = useState(0);
+  const [scrollY, setScrollY] = useState(0);
+
+  // Large content area that allows negative scroll
+  const contentHeight = 2000 * MONTH_HEIGHT;
+  const contentPadding = 1000 * MONTH_HEIGHT; // Padding to allow negative scroll
+
+  const currentDate = useMemo(() => new Date(), []);
+  const paramMonth = params.month
+    ? parseInt(params.month as string)
+    : currentDate.getMonth();
+  const paramYear = params.year
+    ? parseInt(params.year as string)
+    : currentDate.getFullYear();
+
+  const handleScroll = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const newScrollY = event.nativeEvent.contentOffset.y;
+      setScrollY(newScrollY);
+
+      // Calculate month offset from scroll position (relative to contentPadding)
+      // Use floor and add 0.5 threshold to prevent jumping between months
+      const rawOffset = (newScrollY - contentPadding) / MONTH_HEIGHT;
+      const monthOffset = Math.floor(rawOffset + 0.5);
+
+      if (monthOffset !== currentMonthOffset) {
+        setCurrentMonthOffset(monthOffset);
+        const { month, year } = getMonthData(
+          paramYear,
+          paramMonth,
+          monthOffset,
+        );
+        router.setParams({ month: month.toString(), year: year.toString() });
+      }
+    },
+    [currentMonthOffset, getMonthData, router, contentPadding],
+  );
 
   // Calculate which months should be visible based on scroll position
   const visibleMonths = useMemo(() => {
-    const currentOffset = Math.round((scrollY - contentPadding) / MONTH_HEIGHT);
+    const rawOffset = (scrollY - contentPadding) / MONTH_HEIGHT;
+    const currentOffset = Math.floor(rawOffset + 0.5);
     const months = [];
-    
+
     // Render current month + 1 before + 1 after for smooth scrolling
     for (let i = -1; i <= 1; i++) {
       const monthOffset = currentOffset + i;
       months.push({
         offset: monthOffset,
         y: monthOffset * MONTH_HEIGHT,
-        component: renderMonth(monthOffset)
+        component: (
+          <MonthCalendar
+            currentDate={currentDate}
+            monthOffset={monthOffset}
+            paramMonth={paramMonth}
+            paramYear={paramYear}
+          />
+        ),
       });
     }
-    
+
     return months;
-  }, [scrollY, contentPadding, renderMonth]);
+  }, [scrollY, contentPadding, currentDate, paramMonth, paramYear]);
 
   useEffect(() => {
     if (scrollViewRef.current) {
@@ -177,13 +235,16 @@ export default function CalendarScreen() {
         showsVerticalScrollIndicator={false}
         onScroll={handleScroll}
         scrollEventThrottle={16}
-        contentContainerStyle={[styles.scrollContent, { height: contentHeight }]}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { height: contentHeight },
+        ]}
       >
         {visibleMonths.map(({ offset, y, component }) => (
           <View
             key={offset}
             style={{
-              position: 'absolute',
+              position: "absolute",
               top: y + contentPadding,
               left: 0,
               right: 0,
