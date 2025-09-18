@@ -3,6 +3,7 @@ import React, {
   useRef,
   useCallback,
   useEffect,
+  useState,
 } from "react";
 import {
   View,
@@ -14,7 +15,7 @@ import {
   NativeScrollEvent,
   NativeSyntheticEvent,
 } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 const CELL_WIDTH = (screenWidth - 32) / 7;
@@ -143,27 +144,31 @@ const MonthCalendar = ({
 };
 
 export default function CalendarScreen() {
-  const router = useRouter();
-  const params = useLocalSearchParams();
+  const params2 = useLocalSearchParams();
+  const currentDate = useMemo(() => new Date(), []);
+
+  const [{ paramYear, paramMonth }, setParams] = useState(() => {
+    const paramMonth = params2.month
+      ? parseInt(params2.month as string)
+      : currentDate.getMonth();
+    const paramYear = params2.year
+      ? parseInt(params2.year as string)
+      : currentDate.getFullYear();
+    return { paramMonth, paramYear };
+  });
   const scrollViewRef = useRef<ScrollView>(null);
   const calendarPositions = useRef<number[]>([0, 0, 0, 0, 0]);
   const scrollY = useRef(0);
   const lastUpdateRef = useRef(0);
-
-  const currentDate = useMemo(() => new Date(), []);
-  const paramMonth = params.month
-    ? parseInt(params.month as string)
-    : currentDate.getMonth();
-  const paramYear = params.year
-    ? parseInt(params.year as string)
-    : currentDate.getFullYear();
 
   // Static window of 5 calendars: [-2, -1, 0, 1, 2] relative to current month
   const monthOffsets = [-2, -1, 0, 1, 2];
 
   // Calculate positions for each calendar
   useMemo(() => {
-    calendarPositions.current = monthOffsets.map((_, index) => index * MONTH_HEIGHT);
+    calendarPositions.current = monthOffsets.map(
+      (_, index) => index * MONTH_HEIGHT,
+    );
   }, [monthOffsets]);
 
   const handleScroll = useCallback(
@@ -182,10 +187,13 @@ export default function CalendarScreen() {
       calendarPositions.current.forEach((position, index) => {
         const calendarTop = position;
         const calendarBottom = position + MONTH_HEIGHT;
-        
+
         // Calculate visible portion
         const visibleTop = Math.max(calendarTop, newScrollY);
-        const visibleBottom = Math.min(calendarBottom, newScrollY + AVAILABLE_HEIGHT);
+        const visibleBottom = Math.min(
+          calendarBottom,
+          newScrollY + AVAILABLE_HEIGHT,
+        );
         const visibleHeight = Math.max(0, visibleBottom - visibleTop);
         const visibilityPercent = visibleHeight / MONTH_HEIGHT;
 
@@ -199,11 +207,15 @@ export default function CalendarScreen() {
       const newMainOffset = monthOffsets[mostVisibleIndex];
       if (newMainOffset !== 0) {
         lastUpdateRef.current = now;
-        const { month, year } = getMonthData(paramYear, paramMonth, newMainOffset);
-        router.setParams({ month: month.toString(), year: year.toString() });
+        const { month, year } = getMonthData(
+          paramYear,
+          paramMonth,
+          newMainOffset,
+        );
+        setParams({ paramMonth: month, paramYear: year });
       }
     },
-    [paramYear, paramMonth, router, monthOffsets],
+    [paramYear, paramMonth, setParams, monthOffsets],
   );
   // Track previous params to calculate position adjustments
   const prevParamsRef = useRef({ month: paramMonth, year: paramYear });
@@ -223,31 +235,32 @@ export default function CalendarScreen() {
     if (scrollViewRef.current) {
       const prevMonth = prevParamsRef.current.month;
       const prevYear = prevParamsRef.current.year;
-      
+
       // Skip on initial mount
       if (prevMonth === paramMonth && prevYear === paramYear) {
         return;
       }
-      
+
       // Calculate how many months we shifted
       const prevDate = new Date(prevYear, prevMonth);
       const newDate = new Date(paramYear, paramMonth);
-      const monthsDiff = (newDate.getFullYear() - prevDate.getFullYear()) * 12 + 
-                        (newDate.getMonth() - prevDate.getMonth());
+      const monthsDiff =
+        (newDate.getFullYear() - prevDate.getFullYear()) * 12 +
+        (newDate.getMonth() - prevDate.getMonth());
 
       if (monthsDiff !== 0) {
         // Adjust scroll position to maintain visual continuity
         const currentScrollY = scrollY.current;
-        const newScrollY = currentScrollY - (monthsDiff * MONTH_HEIGHT);
-        
+        const newScrollY = currentScrollY - monthsDiff * MONTH_HEIGHT;
+
         // Ensure scroll position stays within bounds
-        const maxScroll = Math.max(0, (MONTH_HEIGHT * 5) - AVAILABLE_HEIGHT);
+        const maxScroll = Math.max(0, MONTH_HEIGHT * 5 - AVAILABLE_HEIGHT);
         const adjustedScrollY = Math.max(0, Math.min(newScrollY, maxScroll));
-        
+
         scrollViewRef.current.scrollTo({ y: adjustedScrollY, animated: false });
         scrollY.current = adjustedScrollY;
       }
-      
+
       // Update previous params
       prevParamsRef.current = { month: paramMonth, year: paramYear };
     }
