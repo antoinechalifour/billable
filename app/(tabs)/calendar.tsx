@@ -11,9 +11,9 @@ import {
   TouchableOpacity,
   StyleSheet,
   Dimensions,
-  ScrollView,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
+  FlatList,
+  ListRenderItem,
+  ViewToken,
 } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 
@@ -94,7 +94,9 @@ const MonthCalendar = ({
   paramMonth: number;
   monthOffset: number;
 }) => {
-  const { month, year } = getMonthData(paramYear, paramMonth, monthOffset);
+  // When monthOffset is 0, just use the passed month/year directly
+  const month = monthOffset === 0 ? paramMonth : getMonthData(paramYear, paramMonth, monthOffset).month;
+  const year = monthOffset === 0 ? paramYear : getMonthData(paramYear, paramMonth, monthOffset).year;
   const rows = getCalendarRows(month, year);
 
   const renderCalendarDay = (
@@ -156,115 +158,82 @@ export default function CalendarScreen() {
       : currentDate.getFullYear();
     return { paramMonth, paramYear };
   });
-  const scrollViewRef = useRef<ScrollView>(null);
-  const calendarPositions = useRef<number[]>([0, 0, 0, 0, 0]);
-  const scrollY = useRef(0);
+  const flatListRef = useRef<FlatList>(null);
   const lastUpdateRef = useRef(0);
 
-  // Static window of 5 calendars: [-2, -1, 0, 1, 2] relative to current month
-  const monthOffsets = [-2, -1, 0, 1, 2];
+  // Generate months data for FlatList (±24 months)
+  const PAST_RANGE = 24;
+  const FUTURE_RANGE = 24;
+  
+  const monthsData = useMemo(() => {
+    const months = [];
+    const baseDate = new Date(paramYear, paramMonth, 1);
+    
+    for (let i = -PAST_RANGE; i <= FUTURE_RANGE; i++) {
+      const date = new Date(baseDate.getFullYear(), baseDate.getMonth() + i, 1);
+      months.push({
+        month: date.getMonth(),
+        year: date.getFullYear(),
+        monthOffset: i,
+        id: `${date.getFullYear()}-${date.getMonth()}`,
+      });
+    }
+    return months;
+  }, [paramYear, paramMonth]);
 
-  // Calculate positions for each calendar
-  useMemo(() => {
-    calendarPositions.current = monthOffsets.map(
-      (_, index) => index * MONTH_HEIGHT,
-    );
-  }, [monthOffsets]);
+  const initialScrollIndex = PAST_RANGE; // Center current month
 
-  const handleScroll = useCallback(
-    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-      const newScrollY = event.nativeEvent.contentOffset.y;
-      scrollY.current = newScrollY;
-
-      // Debounce route updates to prevent rapid changes
+  const handleViewableItemsChanged = useCallback(
+    ({ viewableItems }: { viewableItems: ViewToken[] }) => {
+      // Debounce updates
       const now = Date.now();
       if (now - lastUpdateRef.current < 150) return;
-
-      // Find which calendar is most visible (>60% threshold)
-      let mostVisibleIndex = 2; // Default to center calendar
-      let maxVisibility = 0;
-
-      calendarPositions.current.forEach((position, index) => {
-        const calendarTop = position;
-        const calendarBottom = position + MONTH_HEIGHT;
-
-        // Calculate visible portion
-        const visibleTop = Math.max(calendarTop, newScrollY);
-        const visibleBottom = Math.min(
-          calendarBottom,
-          newScrollY + AVAILABLE_HEIGHT,
-        );
-        const visibleHeight = Math.max(0, visibleBottom - visibleTop);
-        const visibilityPercent = visibleHeight / MONTH_HEIGHT;
-
-        if (visibilityPercent > maxVisibility && visibilityPercent > 0.6) {
-          maxVisibility = visibilityPercent;
-          mostVisibleIndex = index;
+      
+      // Find the most visible item (highest viewablePercentage)
+      let mostVisible = viewableItems[0];
+      for (const item of viewableItems) {
+        if (!item.item || !item.viewablePercentage) continue;
+        if (!mostVisible || (item.viewablePercentage > (mostVisible.viewablePercentage || 0))) {
+          mostVisible = item;
         }
-      });
-
-      // Update route params if main calendar changed
-      const newMainOffset = monthOffsets[mostVisibleIndex];
-      if (newMainOffset !== 0) {
-        lastUpdateRef.current = now;
-        const { month, year } = getMonthData(
-          paramYear,
-          paramMonth,
-          newMainOffset,
-        );
-        setParams({ paramMonth: month, paramYear: year });
+      }
+      
+      if (mostVisible?.item && (mostVisible.viewablePercentage || 0) > 60) {
+        const { month, year } = mostVisible.item;
+        if (month !== paramMonth || year !== paramYear) {
+          lastUpdateRef.current = now;
+          setParams({ paramMonth: month, paramYear: year });
+        }
       }
     },
-    [paramYear, paramMonth, setParams, monthOffsets],
+    [paramMonth, paramYear, setParams],
   );
-  // Track previous params to calculate position adjustments
-  const prevParamsRef = useRef({ month: paramMonth, year: paramYear });
+  const renderMonth: ListRenderItem<typeof monthsData[0]> = useCallback(
+    ({ item }) => (
+      <MonthCalendar
+        key={item.id}
+        currentDate={currentDate}
+        paramMonth={item.month}
+        paramYear={item.year}
+        monthOffset={0} // Not needed anymore since each item has its own month/year
+      />
+    ),
+    [currentDate],
+  );
 
-  // Initial scroll positioning
-  useEffect(() => {
-    if (scrollViewRef.current) {
-      // Center the current month (offset 0, which is at index 2)
-      const centerPosition = calendarPositions.current[2];
-      scrollViewRef.current.scrollTo({ y: centerPosition, animated: false });
-      scrollY.current = centerPosition;
-    }
-  }, []);
+  const getItemLayout = useCallback(
+    (_: any, index: number) => ({
+      length: MONTH_HEIGHT,
+      offset: MONTH_HEIGHT * index,
+      index,
+    }),
+    [],
+  );
 
-  // Recalculate scroll position when route params change
-  useEffect(() => {
-    if (scrollViewRef.current) {
-      const prevMonth = prevParamsRef.current.month;
-      const prevYear = prevParamsRef.current.year;
-
-      // Skip on initial mount
-      if (prevMonth === paramMonth && prevYear === paramYear) {
-        return;
-      }
-
-      // Calculate how many months we shifted
-      const prevDate = new Date(prevYear, prevMonth);
-      const newDate = new Date(paramYear, paramMonth);
-      const monthsDiff =
-        (newDate.getFullYear() - prevDate.getFullYear()) * 12 +
-        (newDate.getMonth() - prevDate.getMonth());
-
-      if (monthsDiff !== 0) {
-        // Adjust scroll position to maintain visual continuity
-        const currentScrollY = scrollY.current;
-        const newScrollY = currentScrollY - monthsDiff * MONTH_HEIGHT;
-
-        // Ensure scroll position stays within bounds
-        const maxScroll = Math.max(0, MONTH_HEIGHT * 5 - AVAILABLE_HEIGHT);
-        const adjustedScrollY = Math.max(0, Math.min(newScrollY, maxScroll));
-
-        scrollViewRef.current.scrollTo({ y: adjustedScrollY, animated: false });
-        scrollY.current = adjustedScrollY;
-      }
-
-      // Update previous params
-      prevParamsRef.current = { month: paramMonth, year: paramYear };
-    }
-  }, [paramMonth, paramYear]);
+  const viewabilityConfig = {
+    viewAreaCoveragePercentThreshold: 50,
+    waitForInteraction: true,
+  };
 
   return (
     <View style={styles.container}>
@@ -276,27 +245,22 @@ export default function CalendarScreen() {
         ))}
       </View>
 
-      <ScrollView
-        ref={scrollViewRef}
-        style={styles.scrollView}
+      <FlatList
+        ref={flatListRef}
+        data={monthsData}
+        renderItem={renderMonth}
+        keyExtractor={(item) => item.id}
+        getItemLayout={getItemLayout}
+        initialScrollIndex={initialScrollIndex}
+        onViewableItemsChanged={handleViewableItemsChanged}
+        viewabilityConfig={viewabilityConfig}
         showsVerticalScrollIndicator={false}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
-        contentContainerStyle={[
-          styles.scrollContent,
-          { height: MONTH_HEIGHT * 5 },
-        ]}
-      >
-        {monthOffsets.map((offset, index) => (
-          <MonthCalendar
-            key={`${paramYear}-${paramMonth}-${offset}`}
-            currentDate={currentDate}
-            paramMonth={paramMonth}
-            paramYear={paramYear}
-            monthOffset={offset}
-          />
-        ))}
-      </ScrollView>
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        removeClippedSubviews={true}
+        maxToRenderPerBatch={3}
+        windowSize={5}
+      />
     </View>
   );
 }
