@@ -92,11 +92,11 @@ export const MonthCalendar = ({
 
 const styles = StyleSheet.create({
   monthHeader: {
-    paddingVertical: 16,
-    alignItems: "center",
+    paddingVertical: 8,
+    alignItems: "flex-end",
   },
   monthHeaderText: {
-    fontSize: 22,
+    fontSize: 12,
     fontWeight: "600",
     color: "#000",
   },

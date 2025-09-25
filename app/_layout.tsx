@@ -3,6 +3,7 @@ import { clients, db, powersync } from "@/src/powersync/powersync";
 import { use } from "react";
 import { PowerSyncContext } from "@powersync/react";
 
+// @ts-ignore
 window.___test = async () => {
   await db.delete(clients);
 };
