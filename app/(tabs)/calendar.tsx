@@ -141,7 +141,4 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 16,
   },
-  calendarRow: {
-    flexDirection: "row",
-  },
 });
