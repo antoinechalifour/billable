@@ -1,19 +1,23 @@
-import { OPSqliteOpenFactory } from "@powersync/op-sqlite";
+// import { OPSqliteOpenFactory } from "@powersync/op-sqlite";
 import { PowerSyncDatabase } from "@powersync/react-native";
 import { sqliteTable, text } from "drizzle-orm/sqlite-core";
 import {
   DrizzleAppSchema,
   wrapPowerSyncWithDrizzle,
 } from "@powersync/drizzle-driver";
+import { SQLJSOpenFactory } from "@powersync/adapter-sql-js";
 
 export const clients = sqliteTable("clients", {
   id: text().primaryKey().notNull(),
   name: text(),
 });
 
-const factory = new OPSqliteOpenFactory({
+const factory = new SQLJSOpenFactory({
   dbFilename: "sqlite.db",
 });
+// const factory = new OPSqliteOpenFactory({
+//   dbFilename: "sqlite.db",
+// });
 
 const drizzleSchema = {
   clients,

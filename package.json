@@ -14,6 +14,7 @@
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
     "@op-engineering/op-sqlite": "^14.1.4",
+    "@powersync/adapter-sql-js": "^0.0.6",
     "@powersync/drizzle-driver": "^0.6.0",
     "@powersync/op-sqlite": "^0.7.8",
     "@powersync/react-native": "^1.24.2",
