@@ -1,119 +1,15 @@
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import {
-  Dimensions,
   FlatList,
   ListRenderItem,
   StyleSheet,
-  Text,
-  TouchableOpacity,
   View,
   ViewToken,
 } from "react-native";
 import { useLocalSearchParams } from "expo-router";
-import { getCalendarRows } from "@/src/domain/calendar";
-import { MONTHS } from "@/src/domain/months";
-import { DAYS } from "@/src/domain/days";
-
-function useCalendarSizes() {
-  const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
-  const CELL_WIDTH = (screenWidth - 32) / 7;
-  const HEADER_HEIGHT = 120;
-  const DAYS_HEADER_HEIGHT = 40;
-  const AVAILABLE_HEIGHT =
-    screenHeight - HEADER_HEIGHT - DAYS_HEADER_HEIGHT - 100;
-  const CELL_HEIGHT = AVAILABLE_HEIGHT / 6;
-  const MONTH_HEIGHT = CELL_HEIGHT * 6 + 80; // 6 rows + header + padding
-
-  return {
-    cell: { width: CELL_WIDTH, height: CELL_HEIGHT },
-    month: { height: MONTH_HEIGHT },
-  };
-}
-
-const getMonthData = (
-  paramYear: number,
-  paramMonth: number,
-  monthOffset: number,
-) => {
-  const baseDate = new Date(paramYear, paramMonth + monthOffset, 1);
-  return {
-    month: baseDate.getMonth(),
-    year: baseDate.getFullYear(),
-  };
-};
-
-const MonthCalendar = ({
-  currentDate,
-  paramYear,
-  paramMonth,
-  monthOffset,
-}: {
-  currentDate: Date;
-  paramYear: number;
-  paramMonth: number;
-  monthOffset: number;
-}) => {
-  const sizes = useCalendarSizes();
-  // When monthOffset is 0, just use the passed month/year directly
-  const month =
-    monthOffset === 0
-      ? paramMonth
-      : getMonthData(paramYear, paramMonth, monthOffset).month;
-  const year =
-    monthOffset === 0
-      ? paramYear
-      : getMonthData(paramYear, paramMonth, monthOffset).year;
-  const rows = getCalendarRows(month, year);
-
-  const renderCalendarDay = (
-    day: number | null,
-    index: number,
-    month: number,
-    year: number,
-  ) => {
-    const isToday =
-      day &&
-      day === currentDate.getDate() &&
-      month === currentDate.getMonth() &&
-      year === currentDate.getFullYear();
-
-    return (
-      <TouchableOpacity
-        key={index}
-        style={[
-          styles.dayCell,
-          isToday ? styles.todayCell : undefined,
-          sizes.cell,
-        ]}
-        disabled={!day}
-      >
-        <Text style={[styles.dayText, isToday ? styles.todayText : undefined]}>
-          {day || ""}
-        </Text>
-      </TouchableOpacity>
-    );
-  };
-
-  return (
-    <View style={[styles.monthContainer, sizes.month]}>
-      <View style={styles.monthHeader}>
-        <Text style={styles.monthHeaderText}>
-          {MONTHS[month]} {year}
-        </Text>
-      </View>
-
-      <View style={styles.monthCalendar}>
-        {rows.map((row, rowIndex) => (
-          <View key={rowIndex} style={styles.calendarRow}>
-            {row.map((day, dayIndex) =>
-              renderCalendarDay(day, rowIndex * 7 + dayIndex, month, year),
-            )}
-          </View>
-        ))}
-      </View>
-    </View>
-  );
-};
+import { useCalendarSizes } from "@/src/hooks/useCalendarSizes";
+import { DaysHeader } from "@/src/components/DaysHeader";
+import { MonthCalendar } from "@/src/components/MonthCalendar";
 
 export default function CalendarScreen() {
   const params2 = useLocalSearchParams();
@@ -211,16 +107,7 @@ export default function CalendarScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.daysHeader}>
-        {DAYS.map((day) => (
-          <View
-            key={day}
-            style={[styles.dayHeaderCell, { width: sizes.cell.width }]}
-          >
-            <Text style={styles.dayHeaderText}>{day}</Text>
-          </View>
-        ))}
-      </View>
+      <DaysHeader />
 
       <FlatList
         ref={flatListRef}
@@ -248,61 +135,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#F2F2F7",
     paddingTop: 16,
   },
-  daysHeader: {
-    flexDirection: "row",
-    paddingHorizontal: 16,
-    paddingBottom: 8,
-    backgroundColor: "#F2F2F7",
-    zIndex: 1,
-  },
-  dayHeaderCell: {
-    alignItems: "center",
-  },
-  dayHeaderText: {
-    fontSize: 12,
-    fontWeight: "500",
-    color: "#8E8E93",
-  },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
     paddingHorizontal: 16,
   },
-  monthContainer: {
-    marginBottom: 24,
-  },
-  monthHeader: {
-    paddingVertical: 16,
-    alignItems: "center",
-  },
-  monthHeaderText: {
-    fontSize: 22,
-    fontWeight: "600",
-    color: "#000",
-  },
-  monthCalendar: {},
   calendarRow: {
     flexDirection: "row",
-  },
-  dayCell: {
-    justifyContent: "flex-start",
-    alignItems: "flex-start",
-    padding: 8,
-    borderTopWidth: 0.5,
-    borderTopColor: "#E5E5EA",
-  },
-  dayText: {
-    fontSize: 16,
-    color: "#000",
-  },
-  todayCell: {
-    backgroundColor: "#007AFF10",
-    borderTopColor: "#007AFF",
-    borderTopWidth: 1,
-  },
-  todayText: {
-    color: "#007AFF",
-    fontWeight: "600",
   },
 });

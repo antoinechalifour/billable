@@ -1,0 +1,17 @@
+import { Dimensions } from "react-native";
+
+export function useCalendarSizes() {
+  const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
+  const CELL_WIDTH = (screenWidth - 32) / 7;
+  const HEADER_HEIGHT = 120;
+  const DAYS_HEADER_HEIGHT = 40;
+  const AVAILABLE_HEIGHT =
+    screenHeight - HEADER_HEIGHT - DAYS_HEADER_HEIGHT - 100;
+  const CELL_HEIGHT = AVAILABLE_HEIGHT / 6;
+  const MONTH_HEIGHT = CELL_HEIGHT * 6 + 80; // 6 rows + header + padding
+
+  return {
+    cell: { width: CELL_WIDTH, height: CELL_HEIGHT },
+    month: { height: MONTH_HEIGHT },
+  };
+}
