@@ -55,19 +55,14 @@ export const MonthCalendar = ({
       <TouchableOpacity
         key={index}
         style={[
-          monthStyles.dayCell,
-          isToday ? monthStyles.todayCell : undefined,
+          styles.dayCell,
+          isToday ? styles.todayCell : undefined,
           sizes.cell,
         ]}
         disabled={!day}
         onPress={() => Haptics.selectionAsync()}
       >
-        <Text
-          style={[
-            monthStyles.dayText,
-            isToday ? monthStyles.todayText : undefined,
-          ]}
-        >
+        <Text style={[styles.dayText, isToday ? styles.todayText : undefined]}>
           {day || ""}
         </Text>
       </TouchableOpacity>
@@ -75,16 +70,16 @@ export const MonthCalendar = ({
   };
 
   return (
-    <View style={[monthStyles.monthContainer, sizes.month]}>
-      <View style={monthStyles.monthHeader}>
-        <Text style={monthStyles.monthHeaderText}>
+    <View style={[sizes.month]}>
+      <View style={styles.monthHeader}>
+        <Text style={styles.monthHeaderText}>
           {MONTHS[month]} {year}
         </Text>
       </View>
 
       <View>
         {rows.map((row, rowIndex) => (
-          <View key={rowIndex} style={monthStyles.calendarRow}>
+          <View key={rowIndex} style={styles.calendarRow}>
             {row.map((day, dayIndex) =>
               renderCalendarDay(day, rowIndex * 7 + dayIndex, month, year),
             )}
@@ -94,8 +89,8 @@ export const MonthCalendar = ({
     </View>
   );
 };
-const monthStyles = StyleSheet.create({
-  monthContainer: {},
+
+const styles = StyleSheet.create({
   monthHeader: {
     paddingVertical: 16,
     alignItems: "center",

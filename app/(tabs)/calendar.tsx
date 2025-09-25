@@ -11,11 +11,11 @@ import { useCalendarSizes } from "@/src/hooks/useCalendarSizes";
 import { DaysHeader } from "@/src/components/DaysHeader";
 import { MonthCalendar } from "@/src/components/MonthCalendar";
 import * as Haptics from "expo-haptics";
+import { ISOMonth, MonthHeader } from "@/src/components/MonthHeader";
 
 export default function CalendarScreen() {
   const params2 = useLocalSearchParams();
   const currentDate = useMemo(() => new Date(), []);
-
   const [{ paramYear, paramMonth }, setParams] = useState(() => {
     const paramMonth = params2.month
       ? parseInt(params2.month as string)
@@ -26,6 +26,9 @@ export default function CalendarScreen() {
     return { paramMonth, paramYear };
   });
   const lastUpdateRef = useRef(0);
+  const [isoMonth, setIsoMonth] = useState<ISOMonth>(
+    `${paramYear}-${paramMonth}`,
+  );
 
   // Generate months data for FlatList (±24 months)
   const PAST_RANGE = 48;
@@ -68,11 +71,13 @@ export default function CalendarScreen() {
       // }
 
       Haptics.selectionAsync();
+      const { month, year } = mostVisible.item;
+      setIsoMonth(`${year}-${month}`);
+      // setParams({ paramMonth: month, paramYear: year });
       // if (mostVisible?.item && (mostVisible.viewablePercentage || 0) > 60) {
       //   const { month, year } = mostVisible.item;
       //   if (month !== paramMonth || year !== paramYear) {
       //     lastUpdateRef.current = now;
-      //     setParams({ paramMonth: month, paramYear: year });
       //   }
       // }
     },
@@ -108,8 +113,8 @@ export default function CalendarScreen() {
 
   return (
     <View style={styles.container}>
+      <MonthHeader isoMonth={isoMonth} />
       <DaysHeader />
-
       <FlatList
         data={monthsData}
         renderItem={renderMonth}
@@ -133,7 +138,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F2F2F7",
-    paddingTop: 16,
   },
   scrollView: {
     flex: 1,

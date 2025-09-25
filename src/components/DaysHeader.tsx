@@ -20,9 +20,12 @@ export const DaysHeader = () => {
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
-    paddingHorizontal: 16,
+    paddingHorizontal: 8,
+    paddingTop: 8,
     paddingBottom: 8,
-    backgroundColor: "#F2F2F7",
+    backgroundColor: "white",
+    borderBottomColor: "#E5E5EA",
+    borderBottomWidth: 1,
     zIndex: 1,
   },
   cell: {
