@@ -9,9 +9,7 @@ export function MonthHeader({ isoMonth }: { isoMonth: ISOMonth }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>
-        {MONTHS[month]} {year}
-      </Text>
+      <Text style={styles.text}>{MONTHS[month]}</Text>
     </View>
   );
 }
