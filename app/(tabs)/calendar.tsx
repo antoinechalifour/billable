@@ -1,75 +1,34 @@
-import React, {
-  useMemo,
-  useRef,
-  useCallback,
-  useEffect,
-  useState,
-} from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
   Dimensions,
   FlatList,
   ListRenderItem,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
   ViewToken,
 } from "react-native";
 import { useLocalSearchParams } from "expo-router";
+import { getCalendarRows } from "@/src/domain/calendar";
+import { MONTHS } from "@/src/domain/months";
+import { DAYS } from "@/src/domain/days";
 
-const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
-const CELL_WIDTH = (screenWidth - 32) / 7;
-const HEADER_HEIGHT = 120;
-const DAYS_HEADER_HEIGHT = 40;
-const AVAILABLE_HEIGHT =
-  screenHeight - HEADER_HEIGHT - DAYS_HEADER_HEIGHT - 100;
-const CELL_HEIGHT = AVAILABLE_HEIGHT / 6;
+function useCalendarSizes() {
+  const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
+  const CELL_WIDTH = (screenWidth - 32) / 7;
+  const HEADER_HEIGHT = 120;
+  const DAYS_HEADER_HEIGHT = 40;
+  const AVAILABLE_HEIGHT =
+    screenHeight - HEADER_HEIGHT - DAYS_HEADER_HEIGHT - 100;
+  const CELL_HEIGHT = AVAILABLE_HEIGHT / 6;
+  const MONTH_HEIGHT = CELL_HEIGHT * 6 + 80; // 6 rows + header + padding
 
-const MONTH_HEIGHT = CELL_HEIGHT * 6 + 80; // 6 rows + header + padding
-
-const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const MONTHS = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
-
-const getCalendarDays = (month: number, year: number) => {
-  const firstDay = new Date(year, month, 1);
-  const lastDay = new Date(year, month + 1, 0);
-  const daysInMonth = lastDay.getDate();
-  const startingDayOfWeek = firstDay.getDay();
-
-  const days = [];
-
-  for (let i = 0; i < startingDayOfWeek; i++) {
-    days.push(null);
-  }
-
-  for (let day = 1; day <= daysInMonth; day++) {
-    days.push(day);
-  }
-
-  return days;
-};
-
-const getCalendarRows = (month: number, year: number) => {
-  const days = getCalendarDays(month, year);
-  const rows = [];
-  for (let i = 0; i < days.length; i += 7) {
-    rows.push(days.slice(i, i + 7));
-  }
-  return rows;
-};
+  return {
+    cell: { width: CELL_WIDTH, height: CELL_HEIGHT },
+    month: { height: MONTH_HEIGHT },
+  };
+}
 
 const getMonthData = (
   paramYear: number,
@@ -94,9 +53,16 @@ const MonthCalendar = ({
   paramMonth: number;
   monthOffset: number;
 }) => {
+  const sizes = useCalendarSizes();
   // When monthOffset is 0, just use the passed month/year directly
-  const month = monthOffset === 0 ? paramMonth : getMonthData(paramYear, paramMonth, monthOffset).month;
-  const year = monthOffset === 0 ? paramYear : getMonthData(paramYear, paramMonth, monthOffset).year;
+  const month =
+    monthOffset === 0
+      ? paramMonth
+      : getMonthData(paramYear, paramMonth, monthOffset).month;
+  const year =
+    monthOffset === 0
+      ? paramYear
+      : getMonthData(paramYear, paramMonth, monthOffset).year;
   const rows = getCalendarRows(month, year);
 
   const renderCalendarDay = (
@@ -114,7 +80,11 @@ const MonthCalendar = ({
     return (
       <TouchableOpacity
         key={index}
-        style={[styles.dayCell, isToday ? styles.todayCell : undefined]}
+        style={[
+          styles.dayCell,
+          isToday ? styles.todayCell : undefined,
+          sizes.cell,
+        ]}
         disabled={!day}
       >
         <Text style={[styles.dayText, isToday ? styles.todayText : undefined]}>
@@ -125,7 +95,7 @@ const MonthCalendar = ({
   };
 
   return (
-    <View style={[styles.monthContainer, { height: MONTH_HEIGHT }]}>
+    <View style={[styles.monthContainer, sizes.month]}>
       <View style={styles.monthHeader}>
         <Text style={styles.monthHeaderText}>
           {MONTHS[month]} {year}
@@ -164,11 +134,11 @@ export default function CalendarScreen() {
   // Generate months data for FlatList (±24 months)
   const PAST_RANGE = 24;
   const FUTURE_RANGE = 24;
-  
+
   const monthsData = useMemo(() => {
     const months = [];
     const baseDate = new Date(paramYear, paramMonth, 1);
-    
+
     for (let i = -PAST_RANGE; i <= FUTURE_RANGE; i++) {
       const date = new Date(baseDate.getFullYear(), baseDate.getMonth() + i, 1);
       months.push({
@@ -188,16 +158,19 @@ export default function CalendarScreen() {
       // Debounce updates
       const now = Date.now();
       if (now - lastUpdateRef.current < 150) return;
-      
+
       // Find the most visible item (highest viewablePercentage)
       let mostVisible = viewableItems[0];
       for (const item of viewableItems) {
         if (!item.item || !item.viewablePercentage) continue;
-        if (!mostVisible || (item.viewablePercentage > (mostVisible.viewablePercentage || 0))) {
+        if (
+          !mostVisible ||
+          item.viewablePercentage > (mostVisible.viewablePercentage || 0)
+        ) {
           mostVisible = item;
         }
       }
-      
+
       if (mostVisible?.item && (mostVisible.viewablePercentage || 0) > 60) {
         const { month, year } = mostVisible.item;
         if (month !== paramMonth || year !== paramYear) {
@@ -208,7 +181,7 @@ export default function CalendarScreen() {
     },
     [paramMonth, paramYear, setParams],
   );
-  const renderMonth: ListRenderItem<typeof monthsData[0]> = useCallback(
+  const renderMonth: ListRenderItem<(typeof monthsData)[0]> = useCallback(
     ({ item }) => (
       <MonthCalendar
         key={item.id}
@@ -221,10 +194,11 @@ export default function CalendarScreen() {
     [currentDate],
   );
 
+  const sizes = useCalendarSizes();
   const getItemLayout = useCallback(
     (_: any, index: number) => ({
-      length: MONTH_HEIGHT,
-      offset: MONTH_HEIGHT * index,
+      length: sizes.month.height,
+      offset: sizes.month.height * index,
       index,
     }),
     [],
@@ -239,7 +213,10 @@ export default function CalendarScreen() {
     <View style={styles.container}>
       <View style={styles.daysHeader}>
         {DAYS.map((day) => (
-          <View key={day} style={styles.dayHeaderCell}>
+          <View
+            key={day}
+            style={[styles.dayHeaderCell, { width: sizes.cell.width }]}
+          >
             <Text style={styles.dayHeaderText}>{day}</Text>
           </View>
         ))}
@@ -279,7 +256,6 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   dayHeaderCell: {
-    width: CELL_WIDTH,
     alignItems: "center",
   },
   dayHeaderText: {
@@ -305,15 +281,11 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#000",
   },
-  monthCalendar: {
-    // No flex wrap needed since we're using rows
-  },
+  monthCalendar: {},
   calendarRow: {
     flexDirection: "row",
   },
   dayCell: {
-    width: CELL_WIDTH,
-    height: CELL_HEIGHT,
     justifyContent: "flex-start",
     alignItems: "flex-start",
     padding: 8,
