@@ -3,6 +3,7 @@ import { useCalendarSizes } from "@/src/hooks/useCalendarSizes";
 import { getCalendarRows } from "@/src/domain/calendar";
 import { MONTHS } from "@/src/domain/months";
 import React from "react";
+import * as Haptics from "expo-haptics";
 
 const getMonthData = (
   paramYear: number,
@@ -59,6 +60,7 @@ export const MonthCalendar = ({
           sizes.cell,
         ]}
         disabled={!day}
+        onPress={() => Haptics.selectionAsync()}
       >
         <Text
           style={[
@@ -93,9 +95,7 @@ export const MonthCalendar = ({
   );
 };
 const monthStyles = StyleSheet.create({
-  monthContainer: {
-    marginBottom: 24,
-  },
+  monthContainer: {},
   monthHeader: {
     paddingVertical: 16,
     alignItems: "center",

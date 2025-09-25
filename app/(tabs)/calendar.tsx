@@ -10,6 +10,7 @@ import { useLocalSearchParams } from "expo-router";
 import { useCalendarSizes } from "@/src/hooks/useCalendarSizes";
 import { DaysHeader } from "@/src/components/DaysHeader";
 import { MonthCalendar } from "@/src/components/MonthCalendar";
+import * as Haptics from "expo-haptics";
 
 export default function CalendarScreen() {
   const params2 = useLocalSearchParams();
@@ -24,12 +25,11 @@ export default function CalendarScreen() {
       : currentDate.getFullYear();
     return { paramMonth, paramYear };
   });
-  const flatListRef = useRef<FlatList>(null);
   const lastUpdateRef = useRef(0);
 
   // Generate months data for FlatList (±24 months)
-  const PAST_RANGE = 24;
-  const FUTURE_RANGE = 24;
+  const PAST_RANGE = 48;
+  const FUTURE_RANGE = 48;
 
   const monthsData = useMemo(() => {
     const months = [];
@@ -57,25 +57,26 @@ export default function CalendarScreen() {
 
       // Find the most visible item (highest viewablePercentage)
       let mostVisible = viewableItems[0];
-      for (const item of viewableItems) {
-        if (!item.item || !item.viewablePercentage) continue;
-        if (
-          !mostVisible ||
-          item.viewablePercentage > (mostVisible.viewablePercentage || 0)
-        ) {
-          mostVisible = item;
-        }
-      }
+      // for (const item of viewableItems) {
+      //   if (!item.item || !item.viewablePercentage) continue;
+      //   if (
+      //     !mostVisible ||
+      //     item.viewablePercentage > (mostVisible.viewablePercentage || 0)
+      //   ) {
+      //     mostVisible = item;
+      //   }
+      // }
 
-      if (mostVisible?.item && (mostVisible.viewablePercentage || 0) > 60) {
-        const { month, year } = mostVisible.item;
-        if (month !== paramMonth || year !== paramYear) {
-          lastUpdateRef.current = now;
-          setParams({ paramMonth: month, paramYear: year });
-        }
-      }
+      Haptics.selectionAsync();
+      // if (mostVisible?.item && (mostVisible.viewablePercentage || 0) > 60) {
+      //   const { month, year } = mostVisible.item;
+      //   if (month !== paramMonth || year !== paramYear) {
+      //     lastUpdateRef.current = now;
+      //     setParams({ paramMonth: month, paramYear: year });
+      //   }
+      // }
     },
-    [paramMonth, paramYear, setParams],
+    [],
   );
   const renderMonth: ListRenderItem<(typeof monthsData)[0]> = useCallback(
     ({ item }) => (
@@ -97,7 +98,7 @@ export default function CalendarScreen() {
       offset: sizes.month.height * index,
       index,
     }),
-    [],
+    [sizes.month.height],
   );
 
   const viewabilityConfig = {
@@ -110,7 +111,6 @@ export default function CalendarScreen() {
       <DaysHeader />
 
       <FlatList
-        ref={flatListRef}
         data={monthsData}
         renderItem={renderMonth}
         keyExtractor={(item) => item.id}

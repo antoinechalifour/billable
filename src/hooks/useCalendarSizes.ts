@@ -8,7 +8,7 @@ export function useCalendarSizes() {
   const AVAILABLE_HEIGHT =
     screenHeight - HEADER_HEIGHT - DAYS_HEADER_HEIGHT - 100;
   const CELL_HEIGHT = AVAILABLE_HEIGHT / 6;
-  const MONTH_HEIGHT = CELL_HEIGHT * 6 + 80; // 6 rows + header + padding
+  const MONTH_HEIGHT = CELL_HEIGHT * 6 + 70; // 6 rows + header + padding
 
   return {
     cell: { width: CELL_WIDTH, height: CELL_HEIGHT },
