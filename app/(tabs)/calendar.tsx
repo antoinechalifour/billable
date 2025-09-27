@@ -123,19 +123,12 @@ export default function CalendarScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F2F2F7",
+    // backgroundColor: "#F2F2F7",
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
     paddingHorizontal: 16,
-  },
-});
-
-const modalStyles = StyleSheet.create({
-  container: {
-    backgroundColor: "white",
-    flex: 1,
   },
 });

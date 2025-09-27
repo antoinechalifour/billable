@@ -2,6 +2,7 @@ import { Stack } from "expo-router";
 import { clients, db, powersync } from "@/src/powersync/powersync";
 import { use } from "react";
 import { PowerSyncContext } from "@powersync/react";
+import "../global.css";
 
 // @ts-ignore
 window.___test = async () => {
