@@ -12,10 +12,16 @@ import { DaysHeader } from "@/src/components/DaysHeader";
 import { MonthCalendar } from "@/src/components/MonthCalendar";
 import * as Haptics from "expo-haptics";
 import { ISOMonth, MonthHeader } from "@/src/components/MonthHeader";
+import { useCurrentDate } from "@/src/hooks/useCurrentDate";
+
+const viewabilityConfig = {
+  viewAreaCoveragePercentThreshold: 50,
+  waitForInteraction: true,
+};
 
 export default function CalendarScreen() {
   const params2 = useLocalSearchParams();
-  const currentDate = useMemo(() => new Date(), []);
+  const currentDate = useCurrentDate();
   const [{ paramYear, paramMonth }, setParams] = useState(() => {
     const paramMonth = params2.month
       ? parseInt(params2.month as string)
@@ -31,7 +37,7 @@ export default function CalendarScreen() {
   );
 
   // Generate months data for FlatList (±24 months)
-  const PAST_RANGE = 48;
+  const PAST_RANGE = 6;
   const FUTURE_RANGE = 48;
 
   const monthsData = useMemo(() => {
@@ -91,11 +97,6 @@ export default function CalendarScreen() {
     }),
     [sizes.month.height],
   );
-
-  const viewabilityConfig = {
-    viewAreaCoveragePercentThreshold: 50,
-    waitForInteraction: true,
-  };
 
   return (
     <View style={styles.container}>
