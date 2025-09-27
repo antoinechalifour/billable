@@ -35,7 +35,9 @@ export default function CalendarScreen() {
   return (
     <CalendarList
       initialIsoMonth={`${year}-${month}`}
-      onDayPressed={(isoDate) => router.push("/test")}
+      onDayPressed={(isoDate) =>
+        router.push(`/create-time-entry?isoDate=${isoDate}`)
+      }
     />
   );
 }

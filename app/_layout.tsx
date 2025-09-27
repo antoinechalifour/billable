@@ -17,7 +17,7 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" />
 
         <Stack.Screen
-          name="test"
+          name="create-time-entry"
           options={{
             presentation: "formSheet",
             sheetGrabberVisible: true,

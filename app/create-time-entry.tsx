@@ -1,5 +1,13 @@
 import React, { useState } from "react";
-import { StyleSheet, TextInput, View, Text, TouchableOpacity, ScrollView } from "react-native";
+import {
+  StyleSheet,
+  TextInput,
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+} from "react-native";
+import { useLocalSearchParams } from "expo-router";
 
 interface Client {
   id: string;
@@ -10,7 +18,7 @@ interface Client {
 
 interface TimeEntryForm {
   clientId?: string;
-  duration: 'day' | 'halfday';
+  duration: "day" | "halfday";
   notes: string;
 }
 
@@ -20,24 +28,38 @@ interface NewClientForm {
   color: string;
 }
 
-const PRESET_COLORS = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57', '#FF9FF3', '#54A0FF', '#5F27CD'];
+const PRESET_COLORS = [
+  "#FF6B6B",
+  "#4ECDC4",
+  "#45B7D1",
+  "#96CEB4",
+  "#FECA57",
+  "#FF9FF3",
+  "#54A0FF",
+  "#5F27CD",
+];
 
-export default function TestPage() {
+export default function CreateTimeEntryScreen() {
   const [existingClients] = useState<Client[]>([]);
-  const [showNewClientForm, setShowNewClientForm] = useState(existingClients.length === 0);
+  const [showNewClientForm, setShowNewClientForm] = useState(
+    existingClients.length === 0,
+  );
   const [timeEntry, setTimeEntry] = useState<TimeEntryForm>({
-    duration: 'day',
-    notes: ''
+    duration: "day",
+    notes: "",
   });
   const [newClient, setNewClient] = useState<NewClientForm>({
-    name: '',
-    price: '',
-    color: PRESET_COLORS[0]
+    name: "",
+    price: "",
+    color: PRESET_COLORS[0],
   });
 
   const handleSubmit = () => {
-    console.log('Time Entry:', timeEntry);
-    console.log('New Client (if creating):', showNewClientForm ? newClient : null);
+    console.log("Time Entry:", timeEntry);
+    console.log(
+      "New Client (if creating):",
+      showNewClientForm ? newClient : null,
+    );
   };
 
   const renderClientSection = () => {
@@ -50,18 +72,22 @@ export default function TestPage() {
               style={styles.input}
               placeholder="Client name"
               value={newClient.name}
-              onChangeText={(text) => setNewClient(prev => ({ ...prev, name: text }))}
+              onChangeText={(text) =>
+                setNewClient((prev) => ({ ...prev, name: text }))
+              }
             />
             <View style={styles.divider} />
             <TextInput
               style={styles.input}
               placeholder="Hourly rate"
               value={newClient.price}
-              onChangeText={(text) => setNewClient(prev => ({ ...prev, price: text }))}
+              onChangeText={(text) =>
+                setNewClient((prev) => ({ ...prev, price: text }))
+              }
               keyboardType="numeric"
             />
           </View>
-          
+
           <Text style={styles.label}>Color</Text>
           <View style={styles.colorPicker}>
             {PRESET_COLORS.map((color) => (
@@ -70,9 +96,9 @@ export default function TestPage() {
                 style={[
                   styles.colorOption,
                   { backgroundColor: color },
-                  newClient.color === color && styles.selectedColor
+                  newClient.color === color && styles.selectedColor,
                 ]}
-                onPress={() => setNewClient(prev => ({ ...prev, color }))}
+                onPress={() => setNewClient((prev) => ({ ...prev, color }))}
               />
             ))}
           </View>
@@ -88,7 +114,7 @@ export default function TestPage() {
             <Text style={styles.selectButtonText}>Select client</Text>
           </TouchableOpacity>
         </View>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.addNewButton}
           onPress={() => setShowNewClientForm(true)}
         >
@@ -101,7 +127,7 @@ export default function TestPage() {
   return (
     <ScrollView style={styles.container}>
       {renderClientSection()}
-      
+
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Duration</Text>
         <View style={styles.segmentedControl}>
@@ -109,14 +135,19 @@ export default function TestPage() {
             style={[
               styles.segmentButton,
               styles.segmentButtonLeft,
-              timeEntry.duration === 'halfday' && styles.segmentButtonActive
+              timeEntry.duration === "halfday" && styles.segmentButtonActive,
             ]}
-            onPress={() => setTimeEntry(prev => ({ ...prev, duration: 'halfday' }))}
+            onPress={() =>
+              setTimeEntry((prev) => ({ ...prev, duration: "halfday" }))
+            }
           >
-            <Text style={[
-              styles.segmentButtonText,
-              timeEntry.duration === 'halfday' && styles.segmentButtonTextActive
-            ]}>
+            <Text
+              style={[
+                styles.segmentButtonText,
+                timeEntry.duration === "halfday" &&
+                  styles.segmentButtonTextActive,
+              ]}
+            >
               Half Day
             </Text>
           </TouchableOpacity>
@@ -124,14 +155,18 @@ export default function TestPage() {
             style={[
               styles.segmentButton,
               styles.segmentButtonRight,
-              timeEntry.duration === 'day' && styles.segmentButtonActive
+              timeEntry.duration === "day" && styles.segmentButtonActive,
             ]}
-            onPress={() => setTimeEntry(prev => ({ ...prev, duration: 'day' }))}
+            onPress={() =>
+              setTimeEntry((prev) => ({ ...prev, duration: "day" }))
+            }
           >
-            <Text style={[
-              styles.segmentButtonText,
-              timeEntry.duration === 'day' && styles.segmentButtonTextActive
-            ]}>
+            <Text
+              style={[
+                styles.segmentButtonText,
+                timeEntry.duration === "day" && styles.segmentButtonTextActive,
+              ]}
+            >
               Full Day
             </Text>
           </TouchableOpacity>
@@ -147,7 +182,9 @@ export default function TestPage() {
             style={[styles.input, styles.notesInput]}
             placeholder="Add notes about this time entry..."
             value={timeEntry.notes}
-            onChangeText={(text) => setTimeEntry(prev => ({ ...prev, notes: text }))}
+            onChangeText={(text) =>
+              setTimeEntry((prev) => ({ ...prev, notes: text }))
+            }
           />
         </View>
       </View>
@@ -164,31 +201,31 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 16,
     paddingVertical: 20,
-    backgroundColor: '#f2f2f7',
+    backgroundColor: "#f2f2f7",
   },
   section: {
     marginBottom: 24,
   },
   sectionTitle: {
     fontSize: 17,
-    fontWeight: '600',
-    color: '#000',
+    fontWeight: "600",
+    color: "#000",
     marginBottom: 8,
     marginLeft: 4,
   },
   label: {
     fontSize: 15,
-    fontWeight: '500',
-    color: '#000',
+    fontWeight: "500",
+    color: "#000",
     marginBottom: 8,
     marginTop: 16,
     marginLeft: 4,
   },
   inputContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 12,
-    overflow: 'hidden',
-    shadowColor: '#000',
+    overflow: "hidden",
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 1,
@@ -201,20 +238,20 @@ const styles = StyleSheet.create({
     fontSize: 17,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    color: '#000',
+    color: "#000",
   },
   notesInput: {
     minHeight: 80,
-    textAlignVertical: 'top',
+    textAlignVertical: "top",
   },
   divider: {
     height: 0.5,
-    backgroundColor: '#e0e0e0',
+    backgroundColor: "#e0e0e0",
     marginLeft: 16,
   },
   colorPicker: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: 12,
     paddingHorizontal: 4,
   },
@@ -223,10 +260,10 @@ const styles = StyleSheet.create({
     height: 36,
     borderRadius: 18,
     borderWidth: 3,
-    borderColor: 'transparent',
+    borderColor: "transparent",
   },
   selectedColor: {
-    borderColor: '#007AFF',
+    borderColor: "#007AFF",
     borderWidth: 3,
   },
   selectButton: {
@@ -235,7 +272,7 @@ const styles = StyleSheet.create({
   },
   selectButtonText: {
     fontSize: 17,
-    color: '#000',
+    color: "#000",
   },
   addNewButton: {
     paddingHorizontal: 16,
@@ -244,19 +281,19 @@ const styles = StyleSheet.create({
   },
   addNewButtonText: {
     fontSize: 15,
-    color: '#007AFF',
-    fontWeight: '500',
+    color: "#007AFF",
+    fontWeight: "500",
   },
   segmentedControl: {
-    flexDirection: 'row',
-    backgroundColor: '#f2f2f7',
+    flexDirection: "row",
+    backgroundColor: "#f2f2f7",
     borderRadius: 8,
     padding: 2,
   },
   segmentButton: {
     flex: 1,
     paddingVertical: 8,
-    alignItems: 'center',
+    alignItems: "center",
     borderRadius: 6,
   },
   segmentButtonLeft: {
@@ -266,8 +303,8 @@ const styles = StyleSheet.create({
     marginLeft: 1,
   },
   segmentButtonActive: {
-    backgroundColor: '#fff',
-    shadowColor: '#000',
+    backgroundColor: "#fff",
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 1,
@@ -278,20 +315,20 @@ const styles = StyleSheet.create({
   },
   segmentButtonText: {
     fontSize: 15,
-    fontWeight: '500',
-    color: '#8e8e93',
+    fontWeight: "500",
+    color: "#8e8e93",
   },
   segmentButtonTextActive: {
-    color: '#000',
+    color: "#000",
   },
   submitButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: "#007AFF",
     borderRadius: 12,
     paddingVertical: 16,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 16,
     marginBottom: 32,
-    shadowColor: '#007AFF',
+    shadowColor: "#007AFF",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -302,7 +339,7 @@ const styles = StyleSheet.create({
   },
   submitButtonText: {
     fontSize: 17,
-    fontWeight: '600',
-    color: '#fff',
+    fontWeight: "600",
+    color: "#fff",
   },
 });
