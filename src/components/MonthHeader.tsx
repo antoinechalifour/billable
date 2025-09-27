@@ -3,6 +3,10 @@ import { MONTHS } from "@/src/domain/months";
 import React from "react";
 
 export type ISOMonth = `${number}-${number}`;
+export const parseIsoMonth = (isoMonth: ISOMonth) => {
+  const [year, month] = isoMonth.split("-").map(Number);
+  return { year, month };
+};
 
 export function MonthHeader({ isoMonth }: { isoMonth: ISOMonth }) {
   const [year, month] = isoMonth.split("-").map(Number);
