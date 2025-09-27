@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   ScrollView,
 } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { Redirect } from "expo-router";
 
 interface Client {
   id: string;
@@ -41,12 +41,12 @@ const PRESET_COLORS = [
 
 export default function CreateTimeEntryScreen() {
   const [existingClients] = useState<Client[]>([
-    {
-      id: "test",
-      name: "Test Client",
-      price: "100",
-      color: "#FF6B6B",
-    },
+    // {
+    //   id: "test",
+    //   name: "Test Client",
+    //   price: "100",
+    //   color: "#FF6B6B",
+    // },
   ]);
   const [showNewClientForm, setShowNewClientForm] = useState(
     existingClients.length === 0,
@@ -60,6 +60,10 @@ export default function CreateTimeEntryScreen() {
     price: "",
     color: PRESET_COLORS[0],
   });
+
+  if (existingClients.length === 0) {
+    return <Redirect href="/create-client" />;
+  }
 
   const handleSubmit = () => {
     console.log("Time Entry:", timeEntry);

@@ -25,6 +25,16 @@ export default function RootLayout() {
             sheetExpandsWhenScrolledToEdge: true,
           }}
         />
+
+        <Stack.Screen
+          name="create-client"
+          options={{
+            presentation: "formSheet",
+            sheetAllowedDetents: "fitToContents",
+            sheetGrabberVisible: true,
+            sheetExpandsWhenScrolledToEdge: true,
+          }}
+        />
       </Stack>
     </PowerSyncContext.Provider>
   );
