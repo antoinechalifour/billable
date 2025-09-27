@@ -60,11 +60,8 @@ export const CalendarList = ({
     }) => {
       const now = Date.now();
       if (now - lastUpdateRef.current < 150) return;
-
-      let mostVisible = viewableItems[0];
-
       Haptics.selectionAsync();
-      setIsoMonth(mostVisible.item.isoMonth);
+      setIsoMonth(viewableItems[0].item.isoMonth);
     },
     [],
   );
@@ -81,7 +78,7 @@ export const CalendarList = ({
 
   const sizes = useCalendarSizes();
   const getItemLayout = useCallback(
-    (_: any, index: number) => ({
+    (_: unknown, index: number) => ({
       length: sizes.month.height,
       offset: sizes.month.height * index,
       index,
