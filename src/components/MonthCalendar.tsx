@@ -4,45 +4,20 @@ import { getCalendarRows } from "@/src/domain/calendar";
 import { MONTHS } from "@/src/domain/months";
 import React from "react";
 import * as Haptics from "expo-haptics";
-
-import { ISOMonth } from "@/src/domain/ISOMonth";
-
-const getMonthData = (
-  paramYear: number,
-  paramMonth: number,
-  monthOffset: number,
-) => {
-  const baseDate = new Date(paramYear, paramMonth + monthOffset, 1);
-  return {
-    month: baseDate.getMonth(),
-    year: baseDate.getFullYear(),
-  };
-};
+import { ISOMonth, parseIsoMonth } from "@/src/domain/ISOMonth";
+import { useCurrentDate } from "@/src/hooks/useCurrentDate";
 
 export type ISODate = `${ISOMonth}-${number}`;
 export const MonthCalendar = ({
-  currentDate,
-  paramYear,
-  paramMonth,
-  monthOffset,
+  isoMonth,
   onDayPress,
 }: {
-  currentDate: Date;
-  paramYear: number;
-  paramMonth: number;
-  monthOffset: number;
+  isoMonth: ISOMonth;
   onDayPress(isoDate: ISODate): void;
 }) => {
+  const currentDate = useCurrentDate();
   const sizes = useCalendarSizes();
-  // When monthOffset is 0, just use the passed month/year directly
-  const month =
-    monthOffset === 0
-      ? paramMonth
-      : getMonthData(paramYear, paramMonth, monthOffset).month;
-  const year =
-    monthOffset === 0
-      ? paramYear
-      : getMonthData(paramYear, paramMonth, monthOffset).year;
+  const { month, year } = parseIsoMonth(isoMonth);
   const rows = getCalendarRows(month, year);
 
   const renderCalendarDay = (

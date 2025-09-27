@@ -1,7 +1,6 @@
 import { MonthHeader } from "@/src/components/MonthHeader";
 import { ISODate, MonthCalendar } from "@/src/components/MonthCalendar";
 import React, { useCallback, useMemo, useRef, useState } from "react";
-import { useCurrentDate } from "@/src/hooks/useCurrentDate";
 import {
   FlatList,
   ListRenderItem,
@@ -12,7 +11,11 @@ import {
 import * as Haptics from "expo-haptics";
 import { useCalendarSizes } from "@/src/hooks/useCalendarSizes";
 import { DaysHeader } from "@/src/components/DaysHeader";
-import { ISOMonth, isoMonthToDate, parseIsoMonth } from "@/src/domain/ISOMonth";
+import {
+  createIsoMonth,
+  ISOMonth,
+  isoMonthToDate,
+} from "@/src/domain/ISOMonth";
 
 const viewabilityConfig = {
   viewAreaCoveragePercentThreshold: 50,
@@ -30,7 +33,6 @@ export const CalendarList = ({
   onDayPressed: (day: ISODate) => void;
 }) => {
   const lastUpdateRef = useRef(0);
-  const currentDate = useCurrentDate();
   const [isoMonth, setIsoMonth] = useState<ISOMonth>(initialIsoMonth);
 
   const monthsData = useMemo(() => {
@@ -40,9 +42,10 @@ export const CalendarList = ({
     for (let i = -PAST_RANGE; i <= FUTURE_RANGE; i++) {
       const date = new Date(baseDate.getFullYear(), baseDate.getMonth() + i, 1);
       months.push({
-        month: date.getMonth(),
-        year: date.getFullYear(),
-        monthOffset: i,
+        isoMonth: createIsoMonth({
+          month: date.getMonth(),
+          year: date.getFullYear(),
+        }),
         id: `${date.getFullYear()}-${date.getMonth()}`,
       });
     }
@@ -50,15 +53,18 @@ export const CalendarList = ({
   }, [initialIsoMonth]);
 
   const handleViewableItemsChanged = useCallback(
-    ({ viewableItems }: { viewableItems: ViewToken[] }) => {
+    ({
+      viewableItems,
+    }: {
+      viewableItems: ViewToken<(typeof monthsData)[0]>[];
+    }) => {
       const now = Date.now();
       if (now - lastUpdateRef.current < 150) return;
 
       let mostVisible = viewableItems[0];
 
       Haptics.selectionAsync();
-      const { month, year } = mostVisible.item;
-      setIsoMonth(`${year}-${month}`);
+      setIsoMonth(mostVisible.item.isoMonth);
     },
     [],
   );
@@ -66,14 +72,11 @@ export const CalendarList = ({
     ({ item }) => (
       <MonthCalendar
         key={item.id}
-        currentDate={currentDate}
-        paramMonth={item.month}
-        paramYear={item.year}
-        monthOffset={0}
+        isoMonth={item.isoMonth}
         onDayPress={onDayPressed}
       />
     ),
-    [currentDate, onDayPressed],
+    [onDayPressed],
   );
 
   const sizes = useCalendarSizes();
