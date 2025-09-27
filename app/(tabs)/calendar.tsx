@@ -6,7 +6,7 @@ import {
   View,
   ViewToken,
 } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCalendarSizes } from "@/src/hooks/useCalendarSizes";
 import { DaysHeader } from "@/src/components/DaysHeader";
 import { MonthCalendar } from "@/src/components/MonthCalendar";
@@ -54,35 +54,18 @@ export default function CalendarScreen() {
 
   const handleViewableItemsChanged = useCallback(
     ({ viewableItems }: { viewableItems: ViewToken[] }) => {
-      // Debounce updates
       const now = Date.now();
       if (now - lastUpdateRef.current < 150) return;
 
-      // Find the most visible item (highest viewablePercentage)
       let mostVisible = viewableItems[0];
-      // for (const item of viewableItems) {
-      //   if (!item.item || !item.viewablePercentage) continue;
-      //   if (
-      //     !mostVisible ||
-      //     item.viewablePercentage > (mostVisible.viewablePercentage || 0)
-      //   ) {
-      //     mostVisible = item;
-      //   }
-      // }
 
       Haptics.selectionAsync();
       const { month, year } = mostVisible.item;
       setIsoMonth(`${year}-${month}`);
-      // setParams({ paramMonth: month, paramYear: year });
-      // if (mostVisible?.item && (mostVisible.viewablePercentage || 0) > 60) {
-      //   const { month, year } = mostVisible.item;
-      //   if (month !== paramMonth || year !== paramYear) {
-      //     lastUpdateRef.current = now;
-      //   }
-      // }
     },
     [],
   );
+  const router = useRouter();
   const renderMonth: ListRenderItem<(typeof monthsData)[0]> = useCallback(
     ({ item }) => (
       <MonthCalendar
@@ -91,9 +74,12 @@ export default function CalendarScreen() {
         paramMonth={item.month}
         paramYear={item.year}
         monthOffset={0} // Not needed anymore since each item has its own month/year
+        onDayPress={(isoDate) => {
+          router.push("/test");
+        }}
       />
     ),
-    [currentDate],
+    [currentDate, router],
   );
 
   const sizes = useCalendarSizes();
@@ -144,5 +130,12 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 16,
+  },
+});
+
+const modalStyles = StyleSheet.create({
+  container: {
+    backgroundColor: "white",
+    flex: 1,
   },
 });

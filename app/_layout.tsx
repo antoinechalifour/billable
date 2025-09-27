@@ -13,7 +13,18 @@ export default function RootLayout() {
   use(promise);
   return (
     <PowerSyncContext.Provider value={powersync}>
-      <Stack screenOptions={{ headerShown: false }} />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(tabs)" />
+
+        <Stack.Screen
+          name="test"
+          options={{
+            presentation: "formSheet",
+            sheetGrabberVisible: true,
+            sheetExpandsWhenScrolledToEdge: true,
+          }}
+        />
+      </Stack>
     </PowerSyncContext.Provider>
   );
 }

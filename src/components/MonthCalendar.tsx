@@ -4,6 +4,7 @@ import { getCalendarRows } from "@/src/domain/calendar";
 import { MONTHS } from "@/src/domain/months";
 import React from "react";
 import * as Haptics from "expo-haptics";
+import { ISOMonth } from "@/src/components/MonthHeader";
 
 const getMonthData = (
   paramYear: number,
@@ -16,16 +17,20 @@ const getMonthData = (
     year: baseDate.getFullYear(),
   };
 };
+
+export type ISODate = `${ISOMonth}-${number}`;
 export const MonthCalendar = ({
   currentDate,
   paramYear,
   paramMonth,
   monthOffset,
+  onDayPress,
 }: {
   currentDate: Date;
   paramYear: number;
   paramMonth: number;
   monthOffset: number;
+  onDayPress(isoDate: ISODate): void;
 }) => {
   const sizes = useCalendarSizes();
   // When monthOffset is 0, just use the passed month/year directly
@@ -60,7 +65,11 @@ export const MonthCalendar = ({
           sizes.cell,
         ]}
         disabled={!day}
-        onPress={() => Haptics.selectionAsync()}
+        onPress={() => {
+          if (day == null) return;
+          Haptics.selectionAsync();
+          onDayPress(`${year}-${month + 1}-${day}`);
+        }}
       >
         <Text style={[styles.dayText, isToday ? styles.todayText : undefined]}>
           {day || ""}
