@@ -40,7 +40,14 @@ const PRESET_COLORS = [
 ];
 
 export default function CreateTimeEntryScreen() {
-  const [existingClients] = useState<Client[]>([]);
+  const [existingClients] = useState<Client[]>([
+    {
+      id: "test",
+      name: "Test Client",
+      price: "100",
+      color: "#FF6B6B",
+    },
+  ]);
   const [showNewClientForm, setShowNewClientForm] = useState(
     existingClients.length === 0,
   );

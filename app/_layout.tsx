@@ -20,6 +20,7 @@ export default function RootLayout() {
           name="create-time-entry"
           options={{
             presentation: "formSheet",
+            sheetAllowedDetents: "fitToContents",
             sheetGrabberVisible: true,
             sheetExpandsWhenScrolledToEdge: true,
           }}
