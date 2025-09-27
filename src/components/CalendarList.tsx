@@ -1,8 +1,4 @@
-import {
-  ISOMonth,
-  MonthHeader,
-  parseIsoMonth,
-} from "@/src/components/MonthHeader";
+import { MonthHeader } from "@/src/components/MonthHeader";
 import { ISODate, MonthCalendar } from "@/src/components/MonthCalendar";
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import { useCurrentDate } from "@/src/hooks/useCurrentDate";
@@ -16,6 +12,7 @@ import {
 import * as Haptics from "expo-haptics";
 import { useCalendarSizes } from "@/src/hooks/useCalendarSizes";
 import { DaysHeader } from "@/src/components/DaysHeader";
+import { ISOMonth, isoMonthToDate, parseIsoMonth } from "@/src/domain/ISOMonth";
 
 const viewabilityConfig = {
   viewAreaCoveragePercentThreshold: 50,
@@ -38,8 +35,7 @@ export const CalendarList = ({
 
   const monthsData = useMemo(() => {
     const months = [];
-    const parsed = parseIsoMonth(initialIsoMonth);
-    const baseDate = new Date(parsed.year, parsed.month, 1);
+    const baseDate = isoMonthToDate(initialIsoMonth);
 
     for (let i = -PAST_RANGE; i <= FUTURE_RANGE; i++) {
       const date = new Date(baseDate.getFullYear(), baseDate.getMonth() + i, 1);

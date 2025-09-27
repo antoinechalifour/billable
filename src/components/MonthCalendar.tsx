@@ -4,7 +4,8 @@ import { getCalendarRows } from "@/src/domain/calendar";
 import { MONTHS } from "@/src/domain/months";
 import React from "react";
 import * as Haptics from "expo-haptics";
-import { ISOMonth } from "@/src/components/MonthHeader";
+
+import { ISOMonth } from "@/src/domain/ISOMonth";
 
 const getMonthData = (
   paramYear: number,

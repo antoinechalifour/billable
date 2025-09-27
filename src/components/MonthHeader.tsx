@@ -1,15 +1,10 @@
 import { StyleSheet, Text, View } from "react-native";
 import { MONTHS } from "@/src/domain/months";
 import React from "react";
-
-export type ISOMonth = `${number}-${number}`;
-export const parseIsoMonth = (isoMonth: ISOMonth) => {
-  const [year, month] = isoMonth.split("-").map(Number);
-  return { year, month };
-};
+import { ISOMonth } from "@/src/domain/ISOMonth";
 
 export function MonthHeader({ isoMonth }: { isoMonth: ISOMonth }) {
-  const [year, month] = isoMonth.split("-").map(Number);
+  const [, month] = isoMonth.split("-").map(Number);
 
   return (
     <View style={styles.container}>
