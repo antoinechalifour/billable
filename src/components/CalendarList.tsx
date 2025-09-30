@@ -9,7 +9,7 @@ import {
   ViewToken,
 } from "react-native";
 import * as Haptics from "expo-haptics";
-import { useCalendarSizes } from "@/src/hooks/useCalendarSizes";
+import { getCalendarSize } from "@/src/hooks/getCalendarSize";
 import { DaysHeader } from "@/src/components/DaysHeader";
 import {
   createIsoMonth,
@@ -76,14 +76,17 @@ export const CalendarList = ({
     [onDayPressed],
   );
 
-  const sizes = useCalendarSizes();
+  const sizes = getCalendarSize();
   const getItemLayout = useCallback(
-    (_: unknown, index: number) => ({
-      length: sizes.month.height,
-      offset: sizes.month.height * index,
-      index,
-    }),
-    [sizes.month.height],
+    (_: unknown, index: number) => {
+      console.log(monthsData[index].isoMonth);
+      return {
+        length: sizes.month.height,
+        offset: sizes.month.height * index,
+        index,
+      };
+    },
+    [monthsData, sizes.month.height],
   );
 
   return (

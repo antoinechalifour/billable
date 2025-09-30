@@ -1,6 +1,6 @@
 import { Dimensions } from "react-native";
 
-export function useCalendarSizes() {
+export function getCalendarSize() {
   const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
   const CELL_WIDTH = (screenWidth - 32) / 7;
   const HEADER_HEIGHT = 120;

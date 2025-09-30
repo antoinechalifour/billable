@@ -1,5 +1,5 @@
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { useCalendarSizes } from "@/src/hooks/useCalendarSizes";
+import { getCalendarSize } from "@/src/hooks/getCalendarSize";
 import { getCalendarRows } from "@/src/domain/calendar";
 import { MONTHS } from "@/src/domain/months";
 import React from "react";
@@ -16,7 +16,7 @@ export const MonthCalendar = ({
   onDayPress(isoDate: ISODate): void;
 }) => {
   const currentDate = useCurrentDate();
-  const sizes = useCalendarSizes();
+  const sizes = getCalendarSize();
   const { month, year } = parseIsoMonth(isoMonth);
   const rows = getCalendarRows(month, year);
 

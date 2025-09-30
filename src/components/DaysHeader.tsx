@@ -1,10 +1,10 @@
 import { StyleSheet, Text, View } from "react-native";
-import { useCalendarSizes } from "@/src/hooks/useCalendarSizes";
+import { getCalendarSize } from "@/src/hooks/getCalendarSize";
 import { DAYS } from "@/src/domain/days";
 import React from "react";
 
 export const DaysHeader = () => {
-  const sizes = useCalendarSizes();
+  const sizes = getCalendarSize();
 
   return (
     <View style={styles.container}>
