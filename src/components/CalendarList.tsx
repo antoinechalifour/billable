@@ -120,7 +120,7 @@ export const CalendarList = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F2F2F7",
+    // backgroundColor: "",
   },
   scrollView: {
     flex: 1,

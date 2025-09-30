@@ -5,7 +5,7 @@ import { ISOMonth, isoMonthToDate } from "@/src/domain/ISOMonth";
 export function getCalendarSize(isoMonth: ISOMonth) {
   const { width: screenWidth } = Dimensions.get("window");
   const CELL_WIDTH = (screenWidth - 32) / 7;
-  const CELL_HEIGHT = 60;
+  const CELL_HEIGHT = 70;
 
   const date = isoMonthToDate(isoMonth);
   const rows = getCalendarRows(date.getMonth(), date.getFullYear());

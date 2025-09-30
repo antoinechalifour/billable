@@ -92,9 +92,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   dayCell: {
-    justifyContent: "center",
+    justifyContent: "flex-start",
     alignItems: "center",
-    padding: 8,
   },
   dayText: {
     fontSize: 16,
@@ -106,6 +105,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     backgroundColor: "#d0e2ff",
     padding: 8,
-    borderRadius: 100,
+    marginTop: -8,
+    borderRadius: 50,
   },
 });
