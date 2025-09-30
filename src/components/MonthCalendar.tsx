@@ -78,7 +78,7 @@ export const MonthCalendar = ({
 const styles = StyleSheet.create({
   monthHeader: {
     paddingVertical: 8,
-    alignItems: "flex-end",
+    alignItems: "flex-start",
   },
   monthHeaderText: {
     fontSize: 12,

@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
+    "@hookform/resolvers": "^5.2.2",
     "@op-engineering/op-sqlite": "^14.1.4",
     "@powersync/adapter-sql-js": "^0.0.6",
     "@powersync/drizzle-driver": "^0.6.0",
