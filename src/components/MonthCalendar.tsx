@@ -89,23 +89,20 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   dayCell: {
-    justifyContent: "flex-start",
-    alignItems: "flex-start",
+    justifyContent: "center",
+    alignItems: "center",
     padding: 8,
-    borderTopWidth: 0.5,
-    borderTopColor: "#E5E5EA",
   },
   dayText: {
     fontSize: 16,
     color: "#000",
   },
-  todayCell: {
-    backgroundColor: "#007AFF10",
-    borderTopColor: "#007AFF",
-    borderTopWidth: 1,
-  },
+  todayCell: {},
   todayText: {
-    color: "#007AFF",
+    color: "#062fb6",
     fontWeight: "600",
+    backgroundColor: "#d0e2ff",
+    padding: 4,
+    borderRadius: 100,
   },
 });
