@@ -16,6 +16,7 @@ import {
   ISOMonth,
   isoMonthToDate,
 } from "@/src/domain/ISOMonth";
+import { getCalendarRows } from "@/src/domain/calendar";
 
 const viewabilityConfig = {
   viewAreaCoveragePercentThreshold: 50,
@@ -76,23 +77,27 @@ export const CalendarList = ({
     [onDayPressed],
   );
 
-  const sizes = getCalendarSize();
   const getItemLayout = useCallback(
     (_: unknown, index: number) => {
-      console.log(monthsData[index].isoMonth);
+      let offset = 0;
+      for (let i = 0; i < index; i++) {
+        const size = getCalendarSize(monthsData[i].isoMonth);
+        offset += size.month.height;
+      }
+      const currentSize = getCalendarSize(monthsData[index].isoMonth);
       return {
-        length: sizes.month.height,
-        offset: sizes.month.height * index,
+        length: currentSize.month.height,
+        offset,
         index,
       };
     },
-    [monthsData, sizes.month.height],
+    [monthsData],
   );
 
   return (
     <View style={styles.container}>
       <MonthHeader isoMonth={isoMonth} />
-      <DaysHeader />
+      <DaysHeader isoMonth={isoMonth} />
       <FlatList
         data={monthsData}
         renderItem={renderMonth}

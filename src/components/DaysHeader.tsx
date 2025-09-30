@@ -2,9 +2,10 @@ import { StyleSheet, Text, View } from "react-native";
 import { getCalendarSize } from "@/src/hooks/getCalendarSize";
 import { DAYS } from "@/src/domain/days";
 import React from "react";
+import { ISOMonth } from "@/src/domain/ISOMonth";
 
-export const DaysHeader = () => {
-  const sizes = getCalendarSize();
+export const DaysHeader = ({ isoMonth }: { isoMonth: ISOMonth }) => {
+  const sizes = getCalendarSize(isoMonth);
 
   return (
     <View style={styles.container}>

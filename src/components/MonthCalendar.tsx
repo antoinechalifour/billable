@@ -16,7 +16,7 @@ export const MonthCalendar = ({
   onDayPress(isoDate: ISODate): void;
 }) => {
   const currentDate = useCurrentDate();
-  const sizes = getCalendarSize();
+  const sizes = getCalendarSize(isoMonth);
   const { month, year } = parseIsoMonth(isoMonth);
   const rows = getCalendarRows(month, year);
 
@@ -56,7 +56,7 @@ export const MonthCalendar = ({
 
   return (
     <View style={[sizes.month]}>
-      <View style={styles.monthHeader}>
+      <View style={[styles.monthHeader]}>
         <Text style={styles.monthHeaderText}>
           {MONTHS[month]} {year}
         </Text>
@@ -77,8 +77,11 @@ export const MonthCalendar = ({
 
 const styles = StyleSheet.create({
   monthHeader: {
-    paddingVertical: 8,
-    alignItems: "flex-start",
+    alignItems: "flex-end",
+    paddingTop: 16,
+    paddingBottom: 8,
+    borderTopWidth: 1,
+    borderColor: "#E5E5EA",
   },
   monthHeaderText: {
     fontSize: 12,
@@ -102,7 +105,7 @@ const styles = StyleSheet.create({
     color: "#062fb6",
     fontWeight: "600",
     backgroundColor: "#d0e2ff",
-    padding: 4,
+    padding: 8,
     borderRadius: 100,
   },
 });
