@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
   monthHeader: {
     alignItems: "flex-end",
     paddingTop: 16,
-    paddingBottom: 8,
+    paddingBottom: 16,
     borderTopWidth: 1,
     borderColor: "#E5E5EA",
   },

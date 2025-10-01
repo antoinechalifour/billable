@@ -20,8 +20,8 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   text: {
-    fontSize: 22,
-    fontWeight: "800",
+    fontSize: 32,
+    fontWeight: "700",
     color: "#000",
   },
 });
