@@ -6,6 +6,8 @@ import { AppTextField } from "../src/components/AppTextField";
 import { AppButton } from "../src/components/AppButton";
 import { ColorPicker } from "../src/components/ColorPicker";
 import { clientSchema, ClientFormData } from "../src/schemas/clientSchema";
+import { clients, db } from "@/src/powersync/powersync";
+import { uuid } from "expo-modules-core";
 
 export default function CreateClientScreen() {
   const {
@@ -16,19 +18,28 @@ export default function CreateClientScreen() {
     resolver: zodResolver(clientSchema),
     defaultValues: {
       name: "",
-      pricePerDay: undefined,
+      pricePerDay: 600,
       color: "#FF6B6B",
     },
   });
 
-  const onSubmit = (data: ClientFormData) => {
-    console.log("Client data:", data);
+  const onSubmit = async (data: ClientFormData) => {
+    await db
+      .insert(clients)
+      .values({
+        id: uuid.v4(),
+        name: data.name,
+        color: data.color,
+      })
+      .run();
   };
 
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Create your first client to get started</Text>
+        <Text style={styles.title}>
+          Create your first client to get started
+        </Text>
         <Text style={styles.subtitle}>
           Add your first client to start tracking billable time
         </Text>

@@ -8,6 +8,9 @@ import {
   ScrollView,
 } from "react-native";
 import { Redirect } from "expo-router";
+import { useSuspenseQuery } from "@powersync/react";
+import { toCompilableQuery } from "@powersync/drizzle-driver";
+import { clients, db } from "@/src/powersync/powersync";
 
 interface Client {
   id: string;
@@ -39,15 +42,9 @@ const PRESET_COLORS = [
   "#5F27CD",
 ];
 
+const query = db.select().from(clients);
 export default function CreateTimeEntryScreen() {
-  const [existingClients] = useState<Client[]>([
-    // {
-    //   id: "test",
-    //   name: "Test Client",
-    //   price: "100",
-    //   color: "#FF6B6B",
-    // },
-  ]);
+  const { data: existingClients } = useSuspenseQuery(toCompilableQuery(query));
   const [showNewClientForm, setShowNewClientForm] = useState(
     existingClients.length === 0,
   );

@@ -10,6 +10,7 @@ import { SQLJSOpenFactory } from "@powersync/adapter-sql-js";
 export const clients = sqliteTable("clients", {
   id: text().primaryKey().notNull(),
   name: text(),
+  color: text(),
 });
 
 const factory = new SQLJSOpenFactory({
