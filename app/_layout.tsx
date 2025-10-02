@@ -1,5 +1,5 @@
 import { Stack } from "expo-router";
-import { clients, db, powersync } from "@/src/powersync/powersync";
+import { clients, Connector, db, powersync } from "@/src/powersync/powersync";
 import { PropsWithChildren, use } from "react";
 import { PowerSyncContext } from "@powersync/react";
 import "react-native-url-polyfill/auto";
@@ -30,7 +30,10 @@ function AuthGuard({ children }: PropsWithChildren) {
   return <Auth />;
 }
 
-const promise = powersync.init();
+const promise = powersync.init().then(() => {
+  const connector = new Connector(supabase);
+  return powersync.connect(connector);
+});
 export default function RootLayout() {
   use(promise);
   return (

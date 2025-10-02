@@ -30,6 +30,7 @@ export default function CreateClientScreen() {
         id: uuid.v4(),
         name: data.name,
         color: data.color,
+        user_id: "bd59dbe0-e179-429a-a75c-29ba9fe9539f",
       })
       .run();
   };
